@@ -45,10 +45,10 @@ Questions are spreadsheet files (`.csv` or `.json`) in the **`questions`** folde
 
 | category | value | clue | answer | image | dailydouble |
 |---|---|---|---|---|---|
-| Space | 100 | This is the star at the center of our solar system. | What is the Sun? | | |
+| Space | 100 | This is the star at the center of our solar system. | The answer is the Sun. | | |
 | Space | 200 | … | … | planets.png | |
 | Animals | 400 | … | … | | yes |
-| Our Planet | final | The Final Jeopardy clue | What is Earth? | | |
+| Our Planet | final | The Final Jeopardy clue | The answer is Earth. | | |
 
 - One row per clue. Categories appear in the order they first show up; point values can be anything (100–500, 200–1000, …).
 - **`final`** in the *value* column makes that row the Final Jeopardy clue (optional – the *category* column is its category).
@@ -64,7 +64,7 @@ Questions are spreadsheet files (`.csv` or `.json`) in the **`questions`** folde
   "categories": [
     { "name": "Fractions",
       "clues": [
-        { "value": 100, "clue": "What is 1/2 + 1/2?", "answer": "What is 1?" },
+        { "value": 100, "clue": "1/2 + 1/2", "answer": "The answer is 1." },
         { "value": 200, "clue": "…", "answer": "…", "image": "pie.png", "dailyDouble": true }
       ] }
   ],
