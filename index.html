@@ -327,7 +327,7 @@ function parseCSV(text) {
     const ch = text[i];
     if (q) {
       if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch;
-    } else if (ch === '"') q = true;
+    } else if (ch === '"' && f === '') q = true;   // a quote only opens a quoted field at the start of a field
     else if (ch === delim) { row.push(f); f = ''; }
     else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
     else f += ch;
@@ -378,6 +378,9 @@ function fromRows(rows) {
     const get = k => (idx[k] >= 0 && r[idx[k]] != null ? String(r[idx[k]]).trim() : '');
     const cat = get('cat'), clue = get('clue'), vs = get('value');
     if (!cat && !clue) return;
+    if (r.slice(header.length).some(c => String(c).trim() !== '')) {
+      set.warnings.push(`Row ${n + 2} (${cat}, ${vs}): too many columns. If the clue or answer has a comma, put it in "quotes".`);
+    }
     if (!cat || !clue) { set.warnings.push(`Row ${n + 2}: needs both a category and a clue — skipped.`); return; }
     if (/^final/i.test(vs)) { set.final = { category: cat, clue, answer: get('answer'), image: get('image') }; return; }
     const value = parseInt(vs.replace(/[^0-9-]/g, ''), 10);
