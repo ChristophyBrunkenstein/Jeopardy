@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Classroom Jeopardy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --navy:#050b3a; --blue:#0b2bd6; --gold:#ffcc33; --green:#2ecc71; --red:#e74c3c; --panel:#101a6e;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--navy);color:#fff;overflow:hidden;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* ---- top bar ---- */
+#top{height:5vh;min-height:34px;display:flex;align-items:center;gap:.8vw;padding:0 1.2vw;background:rgba(0,0,0,.4);flex:none}
+#top .title{flex:1;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-size:clamp(14px,2.3vh,30px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibtn{background:rgba(255,255,255,.13);color:#fff;border:0;border-radius:8px;padding:.5vh 1vw;font-size:clamp(13px,2.1vh,22px);white-space:nowrap}
+.ibtn:hover{background:rgba(255,255,255,.25)}
+.ibtn .dot{display:inline-block;width:.9em;height:.9em;border-radius:50%;background:#888;vertical-align:-.1em;margin-left:.3em}
+.ibtn .dot.on{background:var(--green)}
+
+#stage{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none}
+.screen.on{display:flex}
+
+/* ---- board ---- */
+#board.on{display:grid;padding:1.2vh 1.2vw;gap:.9vmin;
+  grid-template-columns:repeat(var(--cols),minmax(0,1fr));
+  grid-template-rows:minmax(0,.75fr) repeat(var(--rows),minmax(0,1fr))}
+.cat{background:linear-gradient(#0d33ee,#0722a8);border-radius:.7vmin;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:.4vh .5vw;font-weight:800;text-transform:uppercase;line-height:1.05;overflow:hidden;
+  text-shadow:0 .25vh .35vh rgba(0,0,0,.7);letter-spacing:.02em}
+.cat span{display:block;width:100%;overflow-wrap:anywhere}
+.tile{border:0;border-radius:.7vmin;background:linear-gradient(#1a3fff,#0a24b8);color:var(--gold);
+  font-family:Impact,"Arial Narrow",Haettenschweiler,"Segoe UI",sans-serif;font-weight:900;
+  font-size:min(calc(36vh / (var(--rows) + 1)), calc(70vw / var(--cols) / 3));
+  text-shadow:.3vh .3vh 0 #000;transition:transform .12s,filter .12s;min-width:0}
+.tile:hover{transform:scale(1.04);filter:brightness(1.25);z-index:2}
+.tile.used,.tile.empty{background:rgba(255,255,255,.04);color:transparent;text-shadow:none;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.cta{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--navy);border:.5vh solid var(--gold);
+  border-radius:2vh;padding:4vh 4vw;text-align:center;z-index:5;box-shadow:0 0 6vh #000}
+.cta h2{margin:0 0 2vh;font-size:5vh;color:var(--gold)}
+
+/* ---- scoreboard ---- */
+#scores{display:none;height:14vh;min-height:76px;gap:1vw;padding:1vh 1.2vw;background:rgba(0,0,0,.45);flex:none}
+#scores.on{display:flex}
+.team{flex:1;min-width:0;position:relative;border-radius:1.4vh;background:var(--tc);color:var(--tt);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.3vh .5vw;
+  transition:transform .2s,opacity .2s,box-shadow .2s;user-select:none}
+.team .nm{max-width:100%;font-weight:800;font-size:clamp(12px,2.7vh,36px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .sc{font-family:Impact,"Arial Narrow","Segoe UI",sans-serif;font-weight:900;font-size:clamp(20px,5.6vh,72px);line-height:1.05}
+.team .k{position:absolute;left:.5vw;top:.4vh;font-size:clamp(10px,1.8vh,22px);opacity:.65;font-weight:700}
+.team .tab{position:absolute;right:.5vw;top:.3vh;font-size:clamp(11px,2vh,24px);opacity:.3;filter:grayscale(1)}
+.team .tab.claimed{opacity:.55}
+.team .tab.online{opacity:1;filter:none}
+.team .pick{position:absolute;left:0;right:0;bottom:-.2vh;text-align:center;font-size:clamp(9px,1.5vh,18px);font-weight:800;letter-spacing:.12em}
+.team.answering{transform:scale(1.07);z-index:3;box-shadow:0 0 0 .7vh #fff,0 0 5vh var(--tc)}
+.team.locked{opacity:.35}
+.team.locked::after{content:"✗";position:absolute;font-size:6vh;font-weight:900;color:#000;opacity:.5}
+.team.pop{animation:pop .6s}
+@keyframes pop{30%{transform:scale(1.12)}}
+body.clueActive .team{cursor:pointer}
+
+/* ---- clue screen ---- */
+#clue.on,#final.on{flex-direction:column;background:radial-gradient(ellipse at center,#1236ff 0%,#0a1fa8 60%,#06116a 100%);animation:zoom .25s ease-out}
+@keyframes zoom{from{transform:scale(.92);opacity:.3}}
+.clue-head{display:flex;justify-content:space-between;align-items:center;padding:1.4vh 2.5vw;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-size:clamp(16px,3.4vh,46px);flex:none}
+.clue-head #tnum{font-family:Impact,sans-serif;color:#fff;font-size:1.3em}
+.clue-main{flex:1;min-height:0;display:flex;align-items:stretch;gap:3vw;padding:0 5vw}
+.clue-text{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.clue-text .ct{width:100%;text-align:center;font-family:Georgia,"Times New Roman",serif;font-weight:700;text-transform:uppercase;line-height:1.2;text-shadow:.3vh .3vh 0 #000;overflow-wrap:anywhere}
+.cimg{align-self:center;max-width:42%;max-height:100%;border-radius:1vh;box-shadow:0 0 3vh #000;object-fit:contain}
+.ans{flex:none;height:15vh;display:flex;align-items:center;justify-content:center;visibility:hidden;color:var(--gold);font-weight:800;
+  font-size:clamp(20px,5.4vh,72px);text-align:center;padding:0 5vw;text-shadow:.25vh .25vh 0 #000}
+.ans.on{visibility:visible}
+.banner{flex:none;min-height:9vh;display:flex;align-items:center;justify-content:center;gap:1.5vw;font-weight:800;font-size:clamp(16px,3.6vh,48px);padding:0 2vw;text-align:center}
+.banner .muted,.muted{opacity:.7;font-weight:600}
+.banner .live{color:var(--green);animation:pulse 1s infinite}
+.banner .pill{padding:.4vh 1.6vw;border-radius:99px;background:var(--tc);color:var(--tt)}
+@keyframes pulse{50%{opacity:.5}}
+.tbar{flex:none;height:1.3vh;background:rgba(0,0,0,.35);position:relative;opacity:0}
+.tbar.on{opacity:1}
+.tbar i{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--green)}
+.ctl{flex:none;display:flex;flex-wrap:wrap;gap:.8vw;justify-content:center;padding:1vh 2vw;background:rgba(0,0,0,.4)}
+.cbtn{border:0;border-radius:1vh;padding:1vh 1.6vw;font-weight:800;color:#fff;background:rgba(255,255,255,.18);font-size:clamp(13px,2.3vh,28px)}
+.cbtn:hover{filter:brightness(1.25)}
+.cbtn.ok{background:#1f9d55}.cbtn.bad{background:#c0392b}.cbtn.main{background:var(--gold);color:#111}
+.cbtn kbd{opacity:.65;font-family:inherit;font-weight:600;margin-left:.4em;font-size:.8em}
+.dd{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh;width:100%}
+.dd .big{font-family:Impact,sans-serif;color:var(--gold);font-size:11vh;text-shadow:.5vh .5vh 0 #000;animation:pulse 1.2s infinite}
+.dd .row{display:flex;gap:1vw;flex-wrap:wrap;justify-content:center;align-items:center;font-size:clamp(14px,2.6vh,32px);font-weight:700}
+.chip{border:.4vh solid transparent;border-radius:99px;padding:.6vh 1.4vw;background:var(--tc);color:var(--tt);font-weight:800}
+.chip.sel{border-color:#fff;box-shadow:0 0 3vh var(--tc);transform:scale(1.08)}
+.dd input[type=number],.wagers input{width:11ch;font-size:1.2em;font-weight:800;text-align:center;padding:.4vh .5vw;border-radius:1vh;border:0}
+.wagers{display:grid;grid-template-columns:auto auto auto;gap:1.2vh 2vw;align-items:center;margin:auto;font-size:clamp(14px,3vh,38px);font-weight:800}
+.wagers .tn{padding:.4vh 1.4vw;border-radius:99px;background:var(--tc);color:var(--tt)}
+.results{display:flex;gap:1.4vw;flex-wrap:wrap;justify-content:center}
+.results .r{display:flex;align-items:center;gap:.6vw;padding:.5vh 1vw;border-radius:99px;background:var(--tc);color:var(--tt);font-size:clamp(13px,2.4vh,30px)}
+.results .r button{border:0;border-radius:99px;width:4.2vh;height:4.2vh;font-weight:900;font-size:2.4vh;background:rgba(255,255,255,.85);color:#111;opacity:.55}
+.results .r button.sel.y{background:#1f9d55;color:#fff;opacity:1}.results .r button.sel.n{background:#c0392b;color:#fff;opacity:1}
+
+/* ---- winner ---- */
+#winner.on{flex-direction:column;align-items:center;justify-content:center;gap:2vh;text-align:center;
+  background:radial-gradient(ellipse at center,#1a3fff 0%,#06116a 80%)}
+#winner h1{font-family:Impact,sans-serif;font-size:12vh;margin:0;color:var(--gold);text-shadow:.6vh .6vh 0 #000}
+#winner .wn{font-size:8vh;font-weight:900}
+#winner .rank{font-size:3.4vh;font-weight:700;display:flex;flex-direction:column;gap:.8vh}
+#winner .rank div{padding:.4vh 2vw;border-radius:99px;background:var(--tc);color:var(--tt)}
+#confetti{position:absolute;inset:0;pointer-events:none}
+
+/* ---- setup ---- */
+#setup.on{overflow:auto;background:radial-gradient(ellipse at top,#1236ff 0%,#06116a 70%);display:block}
+.setup-wrap{max-width:1280px;margin:0 auto;padding:2vh 3vw 4vh}
+.logo{font-family:Impact,sans-serif;text-align:center;font-size:min(11vh,12vw);color:var(--gold);letter-spacing:.05em;text-shadow:.5vh .5vh 0 #000;margin:.5vh 0 1.5vh}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){.setup-grid{grid-template-columns:1fr}}
+.card{background:rgba(5,11,58,.75);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:16px 18px}
+.card h2{margin:0 0 10px;font-size:18px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em}
+.card .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.card input[type=text],.card input[type=number],.card select{background:#fff;color:#111;border:0;border-radius:8px;padding:8px 10px;font-size:16px}
+.card input[type=number]{width:5.5em}
+.card input[type=text]{flex:1;min-width:0}
+.card label{display:flex;gap:8px;align-items:center;font-size:16px}
+.card button.sm,.btn{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:15px;font-weight:600}
+.card button.sm:hover,.btn:hover{background:rgba(255,255,255,.3)}
+.info{font-size:15px;opacity:.9;line-height:1.5}
+.warn{color:#ffb74d;font-size:14px}
+.err{color:#ff8a80;font-weight:700}
+.sw{width:22px;height:22px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.6)}
+.big{background:var(--gold);color:#111;border:0;border-radius:14px;padding:14px 38px;font-size:24px;font-weight:900;box-shadow:0 4px 0 #b8860b}
+.big.alt{background:#fff}
+.center{justify-content:center;margin-top:22px!important}
+.step{width:36px;height:36px;border-radius:50%;border:0;font-size:22px;font-weight:900}
+.tp{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.qrbox{background:#fff;padding:6px;border-radius:10px;line-height:0}
+.qrbox canvas{width:min(34vh,260px);height:min(34vh,260px);image-rendering:pixelated}
+.tinfo .lbl{font-size:15px;opacity:.8;margin-top:6px}
+.tinfo .url{font-size:28px;font-weight:900;color:var(--gold);word-break:break-all}
+.tinfo .code{font-family:Impact,monospace;font-size:54px;letter-spacing:.2em;color:#fff}
+.tstat{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.tstat .t{display:flex;align-items:center;gap:8px;font-size:16px}
+.tstat .d{width:12px;height:12px;border-radius:50%;background:#666;flex:none}
+.tstat .d.online{background:var(--green);box-shadow:0 0 8px var(--green)}
+.tstat .d.claimed{background:#e0a800}
+.tstat .x{margin-left:auto;background:none;border:0;color:#fff;opacity:.6;font-size:16px}
+details{margin-top:10px;font-size:14px;opacity:.9}
+details ul{margin:6px 0 0;padding-left:20px;line-height:1.5}
+
+/* ---- modal + toast ---- */
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72)}
+.modal.on{display:flex}
+.sheet{background:var(--panel);border:2px solid var(--gold);border-radius:16px;padding:22px 26px;max-width:min(94vw,860px);max-height:92vh;overflow:auto;position:relative}
+.sheet h2{margin:0 0 12px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-size:20px}
+.sheet .x{position:absolute;right:12px;top:8px;background:none;border:0;color:#fff;font-size:28px}
+.sheet input[type=text],.sheet input[type=number]{background:#fff;color:#111;border:0;border-radius:8px;padding:6px 9px;font-size:16px}
+.trow{display:flex;gap:8px;align-items:center;margin:6px 0}
+.trow input[type=text]{flex:1;min-width:0}
+.trow input[type=number]{width:6.5em}
+.mbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.keys{font-size:14px;opacity:.85;line-height:1.6;margin-top:12px}
+.keys kbd{background:rgba(255,255,255,.2);border-radius:4px;padding:1px 6px;font-family:inherit;font-weight:700}
+#toast{position:fixed;left:50%;bottom:17vh;transform:translateX(-50%);background:#000c;color:#fff;border-radius:99px;padding:10px 22px;font-size:clamp(14px,2.4vh,26px);font-weight:700;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="title" id="topTitle">Classroom Jeopardy</div>
+    <button class="ibtn" id="btnTablets" title="Show the QR code / join code">📱 Tablets<span class="dot" id="netDot"></span></button>
+    <button class="ibtn" id="btnSound" title="Sound on/off">🔊</button>
+    <button class="ibtn" id="btnFS" title="Full screen (F)">⛶</button>
+    <button class="ibtn" id="btnMenu" title="Menu (M)">☰ Menu</button>
+  </header>
+
+  <main id="stage">
+    <!-- SETUP -->
+    <section id="setup" class="screen on">
+      <div class="setup-wrap">
+        <div class="logo">JEOPARDY!</div>
+        <div class="setup-grid">
+          <div class="card">
+            <h2>1 · Questions</h2>
+            <div class="row">
+              <select id="setSel" style="flex:1;min-width:0"></select>
+              <button class="sm" id="btnReload" title="Re-read the file (after you edit it)">↻</button>
+              <button class="sm" id="btnOpen">Open file…</button>
+              <input type="file" id="fileIn" accept=".csv,.json,text/csv,application/json" hidden>
+            </div>
+            <div class="row"><label style="flex:1">Game title&nbsp;<input type="text" id="gameTitle"></label></div>
+            <div class="info" id="setInfo"></div>
+            <div class="row"><button class="sm" id="btnTemplate">⬇ Download blank CSV template</button></div>
+          </div>
+
+          <div class="card">
+            <h2>2 · Teams</h2>
+            <div class="row">
+              <span>Number of teams</span>
+              <button class="step" id="tMinus">−</button><b id="tCount" style="font-size:22px;min-width:1.2em;text-align:center">4</b><button class="step" id="tPlus">+</button>
+            </div>
+            <div id="teamInputs"></div>
+          </div>
+
+          <div class="card">
+            <h2>3 · Rules</h2>
+            <div class="row"><label><input type="checkbox" id="optDeduct"> Take points away for wrong answers</label></div>
+            <div class="row"><label><input type="number" id="optBuzz" min="0" max="120"> seconds to buzz in <span class="muted">(0 = no limit)</span></label></div>
+            <div class="row"><label><input type="number" id="optAns" min="0" max="120"> seconds to answer <span class="muted">(0 = no limit)</span></label></div>
+            <div class="row"><label><input type="number" id="optDD" min="0" max="5"> random Daily Doubles <span class="muted">(only if the file doesn't mark any)</span></label></div>
+            <div class="row"><label><input type="checkbox" id="optSound"> Sound effects</label></div>
+          </div>
+
+          <div class="card">
+            <h2>4 · Tablet buzzers <span class="muted" style="text-transform:none;letter-spacing:0;font-size:14px">(optional)</span></h2>
+            <div id="tabletSetup"></div>
+          </div>
+        </div>
+        <div class="row center" style="display:flex;gap:16px">
+          <button class="big" id="btnStart">Start game ▶</button>
+          <button class="big alt" id="btnResume" hidden>Resume saved game</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOARD -->
+    <section id="board" class="screen"></section>
+    <!-- CLUE -->
+    <section id="clue" class="screen"></section>
+    <!-- FINAL -->
+    <section id="final" class="screen"></section>
+    <!-- WINNER -->
+    <section id="winner" class="screen"><canvas id="confetti"></canvas><div id="winnerBody" style="position:relative;display:contents"></div></section>
+  </main>
+
+  <footer id="scores"></footer>
+</div>
+
+<!-- Tablets modal -->
+<div class="modal" id="mTablets"><div class="sheet">
+  <button class="x" data-close>×</button>
+  <h2>📱 Join with a tablet</h2>
+  <div id="tabletModal"></div>
+</div></div>
+
+<!-- Menu modal -->
+<div class="modal" id="mMenu"><div class="sheet" style="min-width:min(94vw,560px)">
+  <button class="x" data-close>×</button>
+  <h2>Teams &amp; scores</h2>
+  <div id="menuTeams"></div>
+  <div class="mbtns">
+    <button class="btn" id="mFinal">🏁 Final Jeopardy</button>
+    <button class="btn" id="mEnd">🏆 End game &amp; show winner</button>
+    <button class="btn" id="mAgain">↺ Restart (same questions &amp; teams)</button>
+    <button class="btn" id="mNew">⚙ Back to setup</button>
+  </div>
+  <div class="keys">
+    <b>Keyboard</b> &nbsp; <kbd>Space</kbd> open buzzers / next &nbsp; <kbd>1</kbd>–<kbd>8</kbd> team answers &nbsp;
+    <kbd>C</kbd> correct &nbsp; <kbd>X</kbd> wrong &nbsp; <kbd>A</kbd> reveal answer &nbsp; <kbd>Esc</kbd> back &nbsp;
+    <kbd>F</kbd> full screen &nbsp; <kbd>M</kbd> menu &nbsp; <kbd>T</kbd> tablets
+  </div>
+</div></div>
+
+<div id="toast"></div>
+
+<script src="qr.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const COLORS = ['#e53935','#fb8c00','#fdd835','#43a047','#00acc1','#8e24aa','#ec407a','#cfd8dc'];
+const textOn = hex => { const n = parseInt(hex.slice(1), 16); return (((n>>16)*299 + ((n>>8)&255)*587 + (n&255)*114) / 1000) > 150 ? '#111' : '#fff'; };
+const fmt = n => (n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US');
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (_) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (_) {} },
+};
+const clampInt = (v, lo, hi) => Math.min(hi, Math.max(lo, parseInt(v, 10) || 0));
+
+const SAMPLE_CSV = `category,value,clue,answer,image,dailydouble
+Space,100,This is the star at the center of our solar system.,What is the Sun?,,
+Space,200,This planet is famous for its beautiful rings.,What is Saturn?,,
+Space,300,Neil Armstrong was the first person to walk on this.,What is the Moon?,,
+Space,400,This is the name of the galaxy that contains our solar system.,What is the Milky Way?,,
+Space,500,"This planet is the hottest in our solar system, even though Mercury is closer to the Sun.",What is Venus?,,
+Animals,100,This farm animal says “moo.”,What is a cow?,,
+Animals,200,A baby kangaroo is called this.,What is a joey?,,
+Animals,300,This is the largest animal on Earth.,What is the blue whale?,,
+Animals,400,"Bats, whales and humans all belong to this group of animals that feed their babies milk.",What are mammals?,,yes
+Animals,500,A group of lions is called this.,What is a pride?,,
+Geography,100,There are this many continents on Earth.,What is seven?,,
+Geography,200,Paris is the capital city of this country.,What is France?,,
+Geography,300,"This continent is the coldest on Earth, and is almost completely covered in ice.",What is Antarctica?,,
+Geography,400,Mount Everest is part of this huge mountain range in Asia.,What are the Himalayas?,,
+Geography,500,"This is the capital city of Australia (hint: it's not Sydney).",What is Canberra?,,
+Word Wizard,100,This word is the opposite of “hot.”,What is cold?,,
+Word Wizard,200,"A word that means the same as another word, like “big” and “large.”",What is a synonym?,,
+Word Wizard,300,"This kind of word describes a noun, like “red” or “enormous.”",What is an adjective?,,
+Word Wizard,400,"“There,” “their” and “they're” are examples of these: words that sound alike but are spelled differently.",What are homophones?,,
+Word Wizard,500,"This punctuation mark shows ownership, as in “the dog's bone.”",What is an apostrophe?,,
+Math Mania,100,7 + 5,What is 12?,,
+Math Mania,200,6 × 7,What is 42?,,
+Math Mania,300,This shape has exactly three sides.,What is a triangle?,,
+Math Mania,400,This is half of 250.,What is 125?,,
+Math Mania,500,"This is the next number in the pattern: 2, 4, 8, 16, …",What is 32?,,
+Our Planet,final,This is the only planet in our solar system that is not named after a god.,What is Earth?,,
+`;
+
+/* =====================================================================
+   Question-set parsing (CSV / JSON)
+   ===================================================================== */
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/, 1)[0];
+  const delim = [',', ';', '\t'].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(f); f = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += ch;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+
+const COLS = {
+  cat: ['category', 'cat', 'topic', 'categoryname'],
+  value: ['value', 'points', 'point', 'pts', 'score', 'amount', 'dollars', 'money'],
+  clue: ['clue', 'question', 'q', 'prompt'],
+  answer: ['answer', 'a', 'response', 'solution'],
+  image: ['image', 'img', 'picture', 'photo', 'imageurl'],
+  dd: ['dailydouble', 'dd', 'double'],
+};
+
+function newSet() { return { title: '', categories: [], values: [], final: null, warnings: [] }; }
+
+function addCell(set, catName, value, clue, answer, image, dd) {
+  let cat = set.categories.find(c => c.name === catName);
+  if (!cat) { cat = { name: catName, cells: {} }; set.categories.push(cat); }
+  if (cat.cells[value]) set.warnings.push(`“${catName}” has two clues worth ${value}; the later one is used.`);
+  cat.cells[value] = { clue, answer, image: image || '', dd: !!dd };
+}
+
+function finishSet(set) {
+  set.values = [...new Set(set.categories.flatMap(c => Object.keys(c.cells).map(Number)))].sort((a, b) => a - b);
+  if (!set.categories.length || !set.values.length) throw new Error('No clues found in that file.');
+  if (set.categories.length > 8) set.warnings.push(`${set.categories.length} categories is a lot — the board gets crowded above 8.`);
+  if (set.values.length > 7) set.warnings.push(`${set.values.length} different point values — the board gets crowded above 7 rows.`);
+  return set;
+}
+
+const yes = v => /^(y|yes|true|1|x|dd|✓)/i.test(String(v || '').trim());
+
+function fromRows(rows) {
+  rows = rows.filter(r => r.some(c => String(c).trim() !== ''));
+  if (!rows.length) throw new Error('The file is empty.');
+  const header = rows[0].map(h => String(h).toLowerCase().replace(/[^a-z0-9]/g, ''));
+  const idx = {};
+  for (const k in COLS) idx[k] = header.findIndex(h => COLS[k].includes(h));
+  if (idx.cat < 0 || idx.clue < 0 || idx.value < 0) {
+    throw new Error('Couldn’t find the columns. The first row must contain: category, value, clue, answer');
+  }
+  const set = newSet();
+  rows.slice(1).forEach((r, n) => {
+    const get = k => (idx[k] >= 0 && r[idx[k]] != null ? String(r[idx[k]]).trim() : '');
+    const cat = get('cat'), clue = get('clue'), vs = get('value');
+    if (!cat && !clue) return;
+    if (!cat || !clue) { set.warnings.push(`Row ${n + 2}: needs both a category and a clue — skipped.`); return; }
+    if (/^final/i.test(vs)) { set.final = { category: cat, clue, answer: get('answer'), image: get('image') }; return; }
+    const value = parseInt(vs.replace(/[^0-9-]/g, ''), 10);
+    if (!(value > 0)) { set.warnings.push(`Row ${n + 2}: “${vs}” isn’t a point value — skipped.`); return; }
+    addCell(set, cat, value, clue, get('answer'), get('image'), yes(get('dd')));
+  });
+  return finishSet(set);
+}
+
+function fromJSON(o) {
+  const set = newSet();
+  set.title = o.title || '';
+  (o.categories || []).forEach(c => {
+    (c.clues || []).forEach((cl, i) => {
+      if (Array.isArray(cl)) cl = { clue: cl[0], answer: cl[1] };
+      const value = Number(cl.value != null ? cl.value : (o.values && o.values[i]) != null ? o.values[i] : (i + 1) * 100);
+      if (cl.clue || cl.question) addCell(set, c.name, value, cl.clue || cl.question, cl.answer || '', cl.image, cl.dailyDouble || cl.dd);
+    });
+  });
+  if (o.final) set.final = { category: o.final.category || 'Final Jeopardy', clue: o.final.clue || o.final.question || '', answer: o.final.answer || '', image: o.final.image || '' };
+  return finishSet(set);
+}
+
+function parseSetText(text, filename) {
+  const set = /\.json$/i.test(filename) || /^\s*[\[{]/.test(text) ? fromJSON(JSON.parse(text)) : fromRows(parseCSV(text));
+  if (!set.title) set.title = filename.replace(/\.[^.]+$/, '').replace(/^Sample - /i, '');
+  return set;
+}
+
+function templateCSV() {
+  const rows = [['category', 'value', 'clue', 'answer', 'image', 'dailydouble']];
+  for (let c = 1; c <= 5; c++) for (let v = 1; v <= 5; v++) rows.push([`Category ${c}`, v * 100, `Clue for Category ${c}, ${v * 100}`, 'What is …?', '', c === 3 && v === 4 ? 'yes' : '']);
+  rows.push(['Final Category', 'final', 'The Final Jeopardy clue goes here', 'What is …?', '', '']);
+  return '﻿' + rows.map(r => r.map(x => /[",\n]/.test(x) ? `"${String(x).replace(/"/g, '""')}"` : x).join(',')).join('\r\n') + '\r\n';
+}
+
+/* =====================================================================
+   Game state
+   ===================================================================== */
+const S = {
+  set: null, title: '', teams: [], used: {}, dd: {}, control: null, screen: 'setup', cur: null, pop: null,
+  opts: Object.assign({ deduct: false, buzzTime: 10, answerTime: 10, finalTime: 30, doubles: 1, sound: true }, store.get('jeo.opts') || {}),
+};
+let F = null; // final jeopardy state
+
+const team = id => S.teams.find(t => t.id === id);
+const imgSrc = p => !p ? '' : /^(https?:|data:)/i.test(p) ? p : 'questions/' + p.split('/').map(encodeURIComponent).join('/');
+
+function makeTeams(n) {
+  const saved = store.get('jeo.teamNames') || [];
+  return Array.from({ length: n }, (_, i) => ({
+    id: 't' + (i + 1),
+    name: (S.teams[i] && S.teams[i].name) || saved[i] || 'Team ' + (i + 1),
+    color: COLORS[i], score: 0,
+  }));
+}
+
+function save() {
+  if (S.screen === 'setup' || !S.set) return;
+  store.set('jeo.save', { v: 1, set: S.set, title: S.title, teams: S.teams, used: S.used, dd: S.dd, control: S.control });
+}
+const cellKey = (ci, v) => ci + ':' + v;
+const totalCells = () => S.set.categories.reduce((n, c) => n + Object.keys(c.cells).length, 0);
+const usedCount = () => Object.keys(S.used).length;
+
+function assignDailyDoubles() {
+  S.dd = {};
+  const all = [];
+  S.set.categories.forEach((c, ci) => Object.keys(c.cells).forEach(v => {
+    if (c.cells[v].dd) S.dd[cellKey(ci, +v)] = true;
+    else if (+v !== S.set.values[0]) all.push(cellKey(ci, +v));
+  }));
+  if (Object.keys(S.dd).length || !S.opts.doubles) return;
+  for (let i = 0; i < S.opts.doubles && all.length; i++) S.dd[all.splice(Math.floor(Math.random() * all.length), 1)[0]] = true;
+}
+
+/* =====================================================================
+   Sound (synthesised – no files needed)
+   ===================================================================== */
+let actx = null;
+function ac() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {} }
+  if (actx && actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(f, d = .15, type = 'sine', vol = .2, when = 0) {
+  if (!S.opts.sound) return;
+  const c = ac(); if (!c) return;
+  const t = c.currentTime + when, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .05);
+}
+const SND = {
+  open: () => { tone(660, .12, 'triangle'); tone(990, .2, 'triangle', .2, .1); },
+  buzz: () => { tone(220, .3, 'square', .14); tone(330, .3, 'square', .1); },
+  right: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, 'triangle', .22, i * .09)),
+  wrong: () => { tone(180, .35, 'sawtooth', .16); tone(140, .5, 'sawtooth', .16, .22); },
+  tick: () => tone(880, .05, 'square', .05),
+  timeup: () => { tone(300, .2, 'sawtooth', .16); tone(220, .5, 'sawtooth', .16, .22); },
+  dd: () => [392, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, .2, 'triangle', .22, i * .12)),
+  join: () => { tone(740, .08, 'sine', .12); tone(988, .12, 'sine', .12, .08); },
+};
+
+/* =====================================================================
+   Tablets – peer-to-peer through PeerJS, so it works from static hosting (GitHub Pages)
+   This page is the "server": it holds the game and decides who buzzed first. Tablets
+   connect straight to it; only the connection set-up goes through PeerJS's free broker.
+   ===================================================================== */
+const PEER_PREFIX = 'classjeo-';
+const PEER_LIBS = ['peerjs.min.js', 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js']; // local copy first, then CDN
+const net = { status: 'off', msg: '', code: null, peer: null, conns: new Map(), claims: new Map(), prevOnline: new Set(), onlineKey: '' };
+const tabletsReady = () => net.status === 'ready';
+const isOnline = id => [...net.conns].some(([c, i]) => c.open && i.teamId === id);
+const isClaimed = id => net.claims.has(id);
+const tabletOnline = isOnline;
+
+function loadPeerLib() {
+  if (window.Peer) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    let i = 0;
+    const next = () => {
+      if (i >= PEER_LIBS.length) return reject(new Error('Could not load the tablet connection library (is the internet blocked?).'));
+      const s = document.createElement('script');
+      s.src = PEER_LIBS[i++];
+      s.onload = () => (window.Peer ? resolve() : next());
+      s.onerror = () => { s.remove(); next(); };
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+
+const genCode = () => { const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; return Array.from({ length: 4 }, () => L[Math.floor(Math.random() * L.length)]).join(''); };
+function setNet(status, msg = '') { net.status = status; net.msg = msg; renderNet(); }
+
+async function enableTablets() {
+  if (['loading', 'connecting', 'ready'].includes(net.status)) return;
+  store.set('jeo.tablets', 1);
+  setNet('loading');
+  try { await loadPeerLib(); } catch (e) { return setNet('error', e.message); }
+  startPeer(store.get('jeo.hostCode'), 0);
+}
+
+function disableTablets() {
+  store.del('jeo.tablets');
+  if (net.peer) { try { net.peer.destroy(); } catch (_) {} }
+  net.peer = null; net.conns.clear(); net.claims.clear(); net.prevOnline = new Set(); net.onlineKey = '';
+  setNet('off'); renderScores();
+}
+
+function startPeer(savedCode, tries) {
+  if (net.peer) { try { net.peer.destroy(); } catch (_) {} }
+  const code = savedCode || genCode();
+  net.code = code; setNet('connecting');
+  let peer;
+  // a secret token lets this browser take its own code straight back after a refresh
+  let tok = store.get('jeo.hostToken');
+  if (!tok) { tok = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join(''); store.set('jeo.hostToken', tok); }
+  try { peer = new Peer(PEER_PREFIX + code, { token: tok }); } catch (e) { return setNet('error', e.message); }
+  net.peer = peer;
+  peer.on('open', () => { store.set('jeo.hostCode', code); setNet('ready'); publish(); renderScores(); });
+  peer.on('connection', onConn);
+  peer.on('disconnected', () => { if (net.peer === peer && !peer.destroyed) peer.reconnect(); });
+  peer.on('error', err => {
+    if (net.peer !== peer) return;
+    if (err.type === 'unavailable-id') {       // code already in use (e.g. we just reloaded) -> retry, then pick a new one
+      peer.destroy();
+      if (savedCode && tries < 2) setTimeout(() => startPeer(savedCode, tries + 1), 2000);
+      else startPeer(null, tries + 1);
+      return;
+    }
+    if (net.status !== 'ready') setNet('error', 'Could not reach the tablet connection service (' + err.type + '). Check the internet connection.');
+  });
+}
+
+// free the code straight away when the page is closed or refreshed, so it can be reused
+addEventListener('pagehide', () => { if (net.peer) { try { net.peer.destroy(); } catch (_) {} } });
+
+function onConn(conn) {
+  const info = { token: null, teamId: null };
+  net.conns.set(conn, info);
+  conn.on('data', m => onMsg(conn, info, m));
+  conn.on('close', () => { net.conns.delete(conn); publish(); });
+  conn.on('error', () => {});
+}
+
+function onMsg(conn, info, m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.t === 'hello') {
+    info.token = String(m.token || '').slice(0, 64);
+    if (info.token.length < 8) { conn.close(); return; }
+    for (const [c, i] of net.conns) if (c !== conn && i.token === info.token) { try { c.close(); } catch (_) {} net.conns.delete(c); } // same tablet reconnecting
+    info.teamId = m.team && net.claims.get(m.team) === info.token && team(m.team) ? m.team : null;
+    publish();
+    return;
+  }
+  if (!info.token) return;
+  if (m.t === 'claim') {
+    const id = m.teamId;
+    if (!team(id)) return;
+    const owner = net.claims.get(id);
+    const ownerOnline = owner && [...net.conns].some(([c, i]) => c.open && i.token === owner && i.teamId === id);
+    if (owner && owner !== info.token && ownerOnline) { try { conn.send({ t: 'denied' }); } catch (_) {} return; }
+    for (const [k, v] of net.claims) if (v === info.token) net.claims.delete(k); // a tablet owns one team
+    net.claims.set(id, info.token); info.teamId = id;
+    publish();
+  } else if (m.t === 'release') {
+    if (info.teamId && net.claims.get(info.teamId) === info.token) net.claims.delete(info.teamId);
+    info.teamId = null; publish();
+  } else if (m.t === 'buzz') {
+    if (info.teamId && net.claims.get(info.teamId) === info.token) onBuzz({ teamId: info.teamId });
+    else publish();
+  }
+}
+
+function releaseTeam(id) {
+  net.claims.delete(id);
+  for (const [c, i] of net.conns) if (i.teamId === id) { i.teamId = null; try { c.send({ t: 'kicked' }); } catch (_) {} }
+  publish(); toast('Tablet disconnected');
+}
+
+function phaseState() {
+  const c = S.cur;
+  const p = { phase: 'idle', eligible: [], buzzed: null, clueOn: false };
+  if (c) {
+    p.clueOn = true;
+    if (c.phase === 'open') { p.phase = 'open'; p.eligible = S.teams.map(t => t.id).filter(id => !c.locked.includes(id)); }
+    else if (c.phase === 'answer') { p.phase = 'buzzed'; p.buzzed = c.answering; }
+    else p.phase = 'closed';
+  } else if (S.screen === 'final') { p.phase = 'closed'; p.clueOn = true; }
+  return p;
+}
+
+// send the current game state to every tablet (call after anything a tablet can see changes)
+function publish() {
+  if (!tabletsReady()) return;
+  for (const id of [...net.claims.keys()]) if (!team(id)) net.claims.delete(id);
+  for (const i of net.conns.values()) if (i.teamId && !team(i.teamId)) i.teamId = null;
+  const online = new Set();
+  for (const [c, i] of net.conns) if (c.open && i.teamId) online.add(i.teamId);
+  const key = [...online].sort().join(',') + '|' + [...net.claims.keys()].sort().join(',');
+  const changed = key !== net.onlineKey;
+  if (changed) {
+    online.forEach(id => { if (!net.prevOnline.has(id) && team(id)) { toast('📱 ' + team(id).name + ' connected'); SND.join(); } });
+    net.prevOnline = online; net.onlineKey = key;
+  }
+  const base = Object.assign({ title: S.title, teams: S.teams.map(t => ({ id: t.id, name: t.name, color: t.color, score: t.score, claimed: net.claims.has(t.id), online: online.has(t.id) })) }, phaseState());
+  for (const [c, i] of net.conns) if (c.open) { try { c.send({ t: 'state', s: Object.assign({ you: i.teamId }, base) }); } catch (_) {} }
+  if (changed) { renderScores(); renderNet(); }
+}
+function pushTeams() { publish(); }
+function pushPhase() { publish(); }
+
+function onBuzz(m) {
+  const c = S.cur;
+  if (c && c.phase === 'open' && !c.locked.includes(m.teamId) && team(m.teamId)) selectTeam(m.teamId);
+  else publish(); // we weren't listening – put the tablets back in sync
+}
+
+function playBase() {
+  let u = /^https?:$/.test(location.protocol) ? new URL('play.html', location.href).href : String(store.get('jeo.playUrl') || '').trim();
+  if (!/^https?:\/\//i.test(u)) return '';
+  if (!/play\.html/i.test(u)) u = u.replace(/[?#].*$/, '').replace(/\/?$/, '/') + 'play.html';
+  return u;
+}
+function joinInfo() {
+  const b = playBase();
+  if (!b || !net.code) return null;
+  return { url: b + '?c=' + net.code, short: b.replace(/^https?:\/\//, ''), code: net.code };
+}
+
+function renderTablets(el) {
+  if (!el) return;
+  const st = net.status;
+  if (st === 'off') {
+    el.innerHTML = `<p class="info">Tablet buzzers are <b>off</b>. You can still play by clicking a team (or pressing its number key) when someone answers.</p>
+      <p class="info">Turning them on needs the internet: a free public service (PeerJS) links the tablets to this page. Team names and scores go directly between the devices.</p>
+      <div class="row"><button class="big" style="font-size:18px;padding:10px 24px" data-net="enable">📱 Turn on tablet buzzers</button></div>`;
+    return;
+  }
+  if (st === 'loading' || st === 'connecting') { el.innerHTML = '<p class="info">Connecting…</p>'; return; }
+  if (st === 'error') {
+    el.innerHTML = `<p class="err">${esc(net.msg)}</p><div class="row"><button class="sm" data-net="retry">Try again</button><button class="sm" data-net="disable">Cancel</button></div>`;
+    return;
+  }
+  const j = joinInfo();
+  const urlBox = /^https?:$/.test(location.protocol) ? '' :
+    `<div class="row"><label style="flex:1">Web address of the game&nbsp;<input type="text" id="playUrl" placeholder="https://yourname.github.io/Jeopardy/" value="${esc(store.get('jeo.playUrl') || '')}"></label></div>`;
+  if (!j) {
+    el.innerHTML = `<p class="info">You opened this page from a file, so the tablets need to know where the game is hosted online. Paste its web address:</p>${urlBox}
+      <div class="row"><button class="sm" data-net="disable">Turn off</button></div>`;
+    return;
+  }
+  const stat = S.teams.map(t => {
+    const cls = isOnline(t.id) ? 'online' : isClaimed(t.id) ? 'claimed' : '';
+    const txt = isOnline(t.id) ? 'connected' : isClaimed(t.id) ? 'tablet offline' : 'no tablet';
+    return `<div class="t"><span class="d ${cls}"></span><b>${esc(t.name)}</b><span class="muted">${txt}</span>${isClaimed(t.id) ? `<button class="x" title="Disconnect this tablet" data-release="${t.id}">✕</button>` : ''}</div>`;
+  }).join('');
+  el.innerHTML = `<div class="tp">
+      <div class="qrbox"><canvas></canvas></div>
+      <div class="tinfo">
+        <div class="lbl">1. Tablets need internet. Scan the code — or open this address:</div>
+        <div class="url" style="font-size:20px">${esc(j.short)}</div>
+        <div class="lbl">2. Join code (if asked):</div>
+        <div class="code">${esc(j.code)}</div>
+      </div></div>
+    <div class="tstat">${stat}</div>${urlBox}
+    <details><summary>Tablet can’t connect?</summary><ul>
+      <li>Check the tablet has internet, and that this page still shows a green “connected” dot or status here.</li>
+      <li>Some school networks block this kind of connection. Try the tablet on a different network (e.g. mobile data or a phone hotspot).</li>
+      <li>Wrong code? The code stays the same until you turn tablets off and on.</li>
+    </ul></details>
+    <div class="row"><button class="sm" data-net="disable">Turn off tablets</button></div>`;
+  QR.draw(el.querySelector('canvas'), j.url, 400);
+}
+
+function renderNet() {
+  $('#netDot').className = 'dot' + (tabletsReady() && S.teams.some(t => isOnline(t.id)) ? ' on' : '');
+  const typing = document.activeElement && document.activeElement.id === 'playUrl';
+  if (!typing) {
+    if ($('#setup').classList.contains('on')) renderTablets($('#tabletSetup'));
+    if ($('#mTablets').classList.contains('on')) renderTablets($('#tabletModal'));
+  }
+  if ($('#mMenu').classList.contains('on')) renderMenu();
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'playUrl') { store.set('jeo.playUrl', e.target.value.trim()); renderNet(); }
+});
+document.addEventListener('click', e => {
+  const r = e.target.closest('[data-release]');
+  if (r) return releaseTeam(r.dataset.release);
+  const n = e.target.closest('[data-net]');
+  if (!n) return;
+  if (n.dataset.net === 'disable') disableTablets();
+  else { net.status = 'off'; enableTablets(); }
+});
+
+/* =====================================================================
+   Screens
+   ===================================================================== */
+function showScreen(name) {
+  S.screen = name;
+  ['setup', 'board', 'clue', 'final', 'winner'].forEach(n => $('#' + n).classList.toggle('on', n === name));
+  if (name !== 'clue') $('#clue').innerHTML = '';   // avoid duplicate #tbar/#tnum ids from a stale screen
+  if (name !== 'final') $('#final').innerHTML = '';
+  $('#scores').classList.toggle('on', ['board', 'clue', 'final'].includes(name));
+  document.body.classList.toggle('clueActive', name === 'clue' || name === 'final');
+  $('#topTitle').textContent = (name === 'setup' ? 'Classroom Jeopardy' : (S.title || (S.set && S.set.title) || 'Jeopardy'));
+  $('#btnMenu').hidden = name === 'setup';
+  requestAnimationFrame(fitAll);
+}
+
+function fitText(box, inner, max, min) {
+  let s = max; inner.style.fontSize = s + 'px';
+  let guard = 60;
+  while (s > min && guard-- > 0 && (inner.offsetHeight > box.clientHeight + 1 || inner.scrollWidth > inner.clientWidth + 1)) {
+    s -= Math.max(1, s * .06); inner.style.fontSize = s + 'px';
+  }
+}
+function fitAll() {
+  $$('#board .cat').forEach(c => fitText(c, c.firstElementChild, innerHeight * .036, 9));
+  const b = $('#clue .clue-text, #final .clue-text'); if (b && b.offsetParent) fitText(b, b.firstElementChild, innerHeight * .1, 14);
+}
+addEventListener('resize', fitAll);
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+/* =====================================================================
+   Setup screen
+   ===================================================================== */
+let fileSet = null; // set opened via "Open file…"
+
+function renderSetInfo(err) {
+  const el = $('#setInfo');
+  if (err) { el.innerHTML = `<span class="err">${esc(err)}</span>`; return; }
+  const s = S.set; if (!s) { el.textContent = ''; return; }
+  const dds = s.categories.reduce((n, c) => n + Object.values(c.cells).filter(x => x.dd).length, 0);
+  el.innerHTML = `<b>${s.categories.length}</b> categories · <b>${totalCells()}</b> clues · Final Jeopardy: <b>${s.final ? '✓' : 'none'}</b> · Daily Doubles marked: <b>${dds}</b>`
+    + (s.warnings.length ? '<div class="warn">' + s.warnings.slice(0, 4).map(esc).join('<br>') + (s.warnings.length > 4 ? `<br>…and ${s.warnings.length - 4} more` : '') + '</div>' : '');
+}
+
+function useSet(set) {
+  S.set = set; S.title = set.title; $('#gameTitle').value = set.title; renderSetInfo();
+}
+
+async function loadSelected() {
+  const v = $('#setSel').value;
+  try {
+    if (v === '__file') useSet(fileSet);
+    else if (v === '__sample') useSet(parseSetText(SAMPLE_CSV, 'General Knowledge.csv'));
+    else {
+      const r = await fetch('questions/' + encodeURIComponent(v), { cache: 'no-store' });
+      if (!r.ok) throw new Error('Could not read ' + v);
+      useSet(parseSetText(await r.text(), v));
+      store.set('jeo.lastSet', v);
+    }
+  } catch (e) { S.set = null; renderSetInfo(e.message); }
+}
+
+async function initSets() {
+  const sel = $('#setSel'); let files = [];
+  // static hosting can't list a folder, so questions/index.json lists the files (a JSON array of file names)
+  if (/^https?:$/.test(location.protocol)) { try { files = await (await fetch('questions/index.json', { cache: 'no-store' })).json(); } catch (_) {} }
+  if (!Array.isArray(files)) files = [];
+  sel.innerHTML = files.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('') + (files.length ? '' : '<option value="__sample">Built-in sample: General Knowledge</option>');
+  const last = store.get('jeo.lastSet');
+  if (files.includes(last)) sel.value = last;
+  await loadSelected();
+}
+
+function renderTeamInputs() {
+  $('#tCount').textContent = S.teams.length;
+  $('#teamInputs').innerHTML = S.teams.map((t, i) => `<div class="row"><span class="sw" style="background:${t.color}"></span><input type="text" maxlength="30" data-team="${i}" value="${esc(t.name)}"></div>`).join('');
+}
+function setTeamCount(n) {
+  n = Math.max(2, Math.min(8, n));
+  S.teams = makeTeams(n); renderTeamInputs(); pushTeams();
+}
+
+function initSetup() {
+  $('#optDeduct').checked = S.opts.deduct; $('#optBuzz').value = S.opts.buzzTime; $('#optAns').value = S.opts.answerTime;
+  $('#optDD').value = S.opts.doubles; $('#optSound').checked = S.opts.sound;
+  $('#btnSound').textContent = S.opts.sound ? '🔊' : '🔇';
+  const saveOpts = () => store.set('jeo.opts', S.opts);
+  $('#optDeduct').onchange = e => { S.opts.deduct = e.target.checked; saveOpts(); };
+  $('#optBuzz').onchange = e => { S.opts.buzzTime = clampInt(e.target.value, 0, 120); e.target.value = S.opts.buzzTime; saveOpts(); };
+  $('#optAns').onchange = e => { S.opts.answerTime = clampInt(e.target.value, 0, 120); e.target.value = S.opts.answerTime; saveOpts(); };
+  $('#optDD').onchange = e => { S.opts.doubles = clampInt(e.target.value, 0, 5); e.target.value = S.opts.doubles; saveOpts(); };
+  $('#optSound').onchange = e => { S.opts.sound = e.target.checked; $('#btnSound').textContent = S.opts.sound ? '🔊' : '🔇'; saveOpts(); };
+  $('#gameTitle').oninput = e => { S.title = e.target.value; };
+  $('#tMinus').onclick = () => setTeamCount(S.teams.length - 1);
+  $('#tPlus').onclick = () => setTeamCount(S.teams.length + 1);
+  $('#teamInputs').oninput = e => {
+    const i = e.target.dataset.team; if (i == null) return;
+    S.teams[i].name = e.target.value || 'Team ' + (+i + 1); pushTeams();
+  };
+  $('#setSel').onchange = loadSelected;
+  $('#btnReload').onclick = () => { loadSelected(); toast('Questions reloaded'); };
+  $('#btnOpen').onclick = () => $('#fileIn').click();
+  $('#fileIn').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        fileSet = parseSetText(rd.result, f.name);
+        let o = $('#setSel option[value="__file"]');
+        if (!o) { o = document.createElement('option'); o.value = '__file'; $('#setSel').appendChild(o); }
+        o.textContent = '📂 ' + f.name; $('#setSel').value = '__file'; useSet(fileSet);
+      } catch (err) { renderSetInfo(err.message); }
+    };
+    rd.readAsText(f); e.target.value = '';
+  };
+  $('#btnTemplate').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([templateCSV()], { type: 'text/csv' })); a.download = 'my-jeopardy-questions.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  $('#btnStart').onclick = startGame;
+  const sv = store.get('jeo.save');
+  if (sv && sv.v === 1 && sv.set) {
+    $('#btnResume').hidden = false;
+    $('#btnResume').textContent = `Resume saved game (${Object.keys(sv.used).length} clues played)`;
+    $('#btnResume').onclick = () => resumeGame(sv);
+  }
+  S.teams = makeTeams(4); renderTeamInputs();
+}
+
+function startGame() {
+  if (!S.set) { toast('Pick a question file first'); return; }
+  S.title = ($('#gameTitle').value || S.set.title || 'Jeopardy').trim();
+  S.teams.forEach(t => t.score = 0);
+  store.set('jeo.teamNames', S.teams.map(t => t.name));
+  S.used = {}; S.control = null; S.cur = null; F = null;
+  assignDailyDoubles();
+  showScreen('board'); renderBoard(); renderScores(); pushTeams(); pushPhase(); save();
+  if (document.documentElement.requestFullscreen && !document.fullscreenElement && matchMedia('(min-width:1200px)').matches) { /* leave fullscreen to the teacher (F) */ }
+}
+
+function resumeGame(sv) {
+  S.set = sv.set; S.title = sv.title; S.teams = sv.teams; S.used = sv.used; S.dd = sv.dd; S.control = sv.control; S.cur = null; F = null;
+  showScreen('board'); renderBoard(); renderScores(); pushTeams(); pushPhase();
+}
+
+/* =====================================================================
+   Board + scoreboard
+   ===================================================================== */
+function renderBoard() {
+  const s = S.set, el = $('#board');
+  el.style.setProperty('--cols', s.categories.length);
+  el.style.setProperty('--rows', s.values.length);
+  let html = s.categories.map(c => `<div class="cat"><span>${esc(c.name)}</span></div>`).join('');
+  s.values.forEach(v => s.categories.forEach((c, ci) => {
+    const cell = c.cells[v];
+    if (!cell) html += '<div class="tile empty"></div>';
+    else if (S.used[cellKey(ci, v)]) html += '<div class="tile used"></div>';
+    else html += `<button class="tile" data-c="${ci}" data-v="${v}">${fmt(v)}</button>`;
+  }));
+  if (usedCount() >= totalCells()) {
+    html += `<div class="cta"><h2>Board cleared!</h2>${s.final ? '<button class="big" data-act="final">🏁 Final Jeopardy</button> ' : ''}<button class="big alt" data-act="end">🏆 Show winner</button></div>`;
+  }
+  el.innerHTML = html;
+  fitAll();
+}
+
+$('#board').addEventListener('click', e => {
+  const t = e.target.closest('.tile[data-c]');
+  if (t) return openClue(+t.dataset.c, +t.dataset.v);
+  const a = e.target.closest('[data-act]');
+  if (a) a.dataset.act === 'final' ? startFinal() : showWinner();
+});
+
+function renderScores() {
+  const c = S.cur;
+  $('#scores').innerHTML = S.teams.map((t, i) => {
+    const cls = ['team'];
+    if (c && c.answering === t.id) cls.push('answering');
+    if (c && c.locked.includes(t.id)) cls.push('locked');
+    if (S.pop === t.id) cls.push('pop');
+    const tab = tabletsReady() ? `<span class="tab ${isOnline(t.id) ? 'online' : isClaimed(t.id) ? 'claimed' : ''}" title="${isOnline(t.id) ? 'tablet connected' : 'no tablet'}">📱</span>` : '';
+    return `<div class="${cls.join(' ')}" data-id="${t.id}" style="--tc:${t.color};--tt:${textOn(t.color)}">
+      <span class="k">${i + 1}</span>${tab}<div class="nm">${esc(t.name)}</div><div class="sc">${fmt(t.score)}</div>
+      ${S.control === t.id && S.screen === 'board' ? '<span class="pick">★ PICKS</span>' : ''}</div>`;
+  }).join('');
+  S.pop = null;
+}
+$('#scores').addEventListener('click', e => {
+  const t = e.target.closest('.team'); if (t && S.cur) selectTeam(t.dataset.id);
+});
+
+/* =====================================================================
+   Clue flow
+   ===================================================================== */
+let T = null; // active timer
+function stopTimer() { if (T) { clearInterval(T.iv); T = null; } tickUI(); }
+function startTimer(sec, onEnd) {
+  stopTimer(); if (!sec) return;
+  T = { end: Date.now() + sec * 1000, total: sec * 1000, onEnd, lastShown: null };
+  T.iv = setInterval(tickUI, 100); tickUI();
+}
+function tickUI() {
+  const bar = $('#tbar'), fill = $('#tfill'), num = $('#tnum');
+  if (!T) { if (bar) bar.classList.remove('on'); if (num) num.textContent = ''; return; }
+  const left = T.end - Date.now(), secs = Math.max(0, Math.ceil(left / 1000));
+  if (bar) { bar.classList.add('on'); fill.style.width = Math.max(0, left / T.total * 100) + '%'; fill.style.background = left / T.total < .3 ? '#f1c40f' : 'var(--green)'; }
+  if (num) num.textContent = secs;
+  if (T.lastShown !== secs) { T.lastShown = secs; if (secs > 0 && secs <= 3) SND.tick(); }
+  if (left <= 0) { const cb = T.onEnd; stopTimer(); cb && cb(); }
+}
+
+function openClue(ci, v) {
+  const cat = S.set.categories[ci], cell = cat.cells[v];
+  if (!cell || S.used[cellKey(ci, v)] || S.cur) return;
+  ac();
+  S.cur = { ci, v, key: cellKey(ci, v), cat: cat.name, clue: cell.clue, answer: cell.answer, image: cell.image,
+    dd: !!S.dd[cellKey(ci, v)], phase: 'show', locked: [], answering: null, wager: 0, ddTeam: null, revealed: false, scoredBy: null, note: '' };
+  const c = S.cur;
+  if (c.dd) {
+    c.phase = 'ddsetup';
+    c.ddTeam = S.control || S.teams[0].id;
+    const t = team(c.ddTeam); c.wager = Math.min(ddMax(t), c.v);
+    SND.dd();
+  } else SND.open();
+  showScreen('clue'); renderClue(); renderScores(); pushPhase();
+}
+
+const ddMax = t => Math.max(t.score, S.set.values[S.set.values.length - 1]);
+
+function renderClue() {
+  const c = S.cur; if (!c) return;
+  let main, banner = '', ctl = '';
+  const clueBlock = `<div class="clue-text"><div class="ct">${esc(c.clue)}</div></div>${c.image ? `<img class="cimg" src="${esc(imgSrc(c.image))}" onload="fitAll()" alt="">` : ''}`;
+  const btn = (act, label, key, cls = '') => `<button class="cbtn ${cls}" data-act="${act}">${label}${key ? `<kbd>${key}</kbd>` : ''}</button>`;
+  const canPutBack = !c.scoredBy && c.phase !== 'closed' && !(S.opts.deduct && c.locked.length);
+  const putBack = canPutBack ? btn('putback', '↩ Put back', 'Esc') : '';
+
+  switch (c.phase) {
+    case 'ddsetup': {
+      const t = team(c.ddTeam), mx = ddMax(t);
+      main = `<div class="dd"><div class="big">DAILY DOUBLE!</div>
+        <div class="row">Who is playing?&nbsp;${S.teams.map(x => `<button class="chip ${x.id === c.ddTeam ? 'sel' : ''}" style="--tc:${x.color};--tt:${textOn(x.color)}" data-act="ddteam" data-id="${x.id}">${esc(x.name)}</button>`).join('')}</div>
+        <div class="row">Wager (0 – ${fmt(mx)}):&nbsp;<input type="number" id="wager" min="0" max="${mx}" step="100" value="${c.wager}"></div></div>`;
+      ctl = btn('ddgo', 'Show the clue', 'Enter', 'main') + putBack;
+      break;
+    }
+    case 'show':
+      main = clueBlock;
+      banner = '<span class="muted">Read the clue, then open the buzzers</span>';
+      ctl = btn('open', '🔔 Open buzzers', 'Space', 'main') + btn('reveal', '👁 Reveal answer', 'A') + putBack;
+      break;
+    case 'open': {
+      main = clueBlock;
+      const any = S.teams.some(t => tabletOnline(t.id));
+      banner = `<span class="live">🔔 BUZZERS OPEN</span><span class="muted">${any ? 'Tablets: tap now! ' : ''}${c.note ? '' : 'or click a team / press its number'}</span>` + (c.note ? `<span class="muted">${esc(c.note)}</span>` : '');
+      ctl = btn('reveal', '👁 Nobody — reveal answer', 'A') + putBack;
+      break;
+    }
+    case 'answer': {
+      main = clueBlock;
+      const t = team(c.answering);
+      banner = `<span class="pill" style="--tc:${t.color};--tt:${textOn(t.color)}">${esc(t.name)}</span><span>${c.dd ? `wagered ${fmt(c.wager)} — ` : ''}what's your answer?</span>`;
+      ctl = btn('correct', '✓ Correct', 'C', 'ok') + btn('wrong', '✗ Wrong', 'X', 'bad') + btn('reveal', '👁 Reveal', 'A') + putBack;
+      break;
+    }
+    default: { // closed
+      main = clueBlock;
+      if (c.scoredBy) { const t = team(c.scoredBy); banner = `<span class="pill" style="--tc:${t.color};--tt:${textOn(t.color)}">${esc(t.name)}</span><span>✓ +${fmt(c.amount)}</span>`; }
+      else banner = `<span>${esc(c.note || 'No one got it')}</span>`;
+      ctl = btn('back', 'Back to board', 'Space', 'main');
+    }
+  }
+  $('#clue').innerHTML = `
+    <div class="clue-head"><span>${esc(c.cat)}</span><span id="tnum"></span><span>${c.dd ? 'Daily Double' : fmt(c.v)}</span></div>
+    <div class="clue-main">${main}</div>
+    <div class="ans ${c.revealed ? 'on' : ''}">${esc(c.answer)}</div>
+    <div class="banner">${banner}</div>
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="ctl">${ctl}</div>`;
+  fitAll(); tickUI();
+}
+
+$('#clue').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  if (b.dataset.act === 'ddteam') { S.cur.ddTeam = b.dataset.id; const t = team(b.dataset.id); S.cur.wager = Math.min(ddMax(t), S.cur.wager || S.cur.v); renderClue(); renderScores(); return; }
+  ({ open: openBuzzers, reveal: doReveal, putback: putBack, correct: markCorrect, wrong: markWrong, back: backToBoard, ddgo: ddGo })[b.dataset.act]();
+});
+$('#clue').addEventListener('input', e => {
+  if (e.target.id === 'wager' && S.cur) S.cur.wager = parseInt(e.target.value, 10) || 0;
+});
+
+function ddGo() {
+  const c = S.cur; if (!c || c.phase !== 'ddsetup') return;
+  const t = team(c.ddTeam), mx = ddMax(t);
+  c.wager = clampInt(c.wager, 0, mx);
+  c.answering = t.id; c.phase = 'answer';
+  startTimer(S.opts.answerTime, () => { SND.timeup(); toast("Time's up!"); });
+  renderClue(); renderScores(); pushPhase();
+}
+
+function openBuzzers() {
+  const c = S.cur; if (!c || !(c.phase === 'show' || c.phase === 'open')) return;
+  c.phase = 'open'; c.answering = null; SND.open();
+  startTimer(S.opts.buzzTime, () => { SND.timeup(); c.note = "Time's up!"; doReveal(); });
+  renderClue(); renderScores(); pushPhase();
+}
+
+function selectTeam(id) {
+  const c = S.cur; if (!c || c.scoredBy || !team(id)) return;
+  if (c.phase === 'ddsetup') { c.ddTeam = id; c.wager = Math.min(ddMax(team(id)), c.wager || c.v); renderClue(); renderScores(); return; }
+  if (c.dd || c.locked.includes(id)) return;
+  stopTimer();
+  c.answering = id; c.phase = 'answer'; c.note = '';
+  SND.buzz();
+  startTimer(S.opts.answerTime, () => { SND.timeup(); toast("Time's up!"); });
+  renderClue(); renderScores(); pushPhase();
+}
+
+function afterScore(id) { S.pop = id; renderScores(); pushTeams(); save(); }
+
+function markCorrect() {
+  const c = S.cur; if (!c || c.phase !== 'answer') return;
+  const t = team(c.answering), amt = c.dd ? c.wager : c.v;
+  stopTimer(); t.score += amt; S.control = t.id; c.scoredBy = t.id; c.amount = amt;
+  c.revealed = true; c.phase = 'closed'; c.answering = null;
+  SND.right(); renderClue(); afterScore(t.id); pushPhase();
+}
+
+function markWrong() {
+  const c = S.cur; if (!c || c.phase !== 'answer') return;
+  const t = team(c.answering), amt = c.dd ? c.wager : c.v;
+  stopTimer(); if (S.opts.deduct) t.score -= amt;
+  c.locked.push(t.id); c.answering = null; SND.wrong();
+  if (c.dd) { c.revealed = true; c.phase = 'closed'; c.note = `${t.name} missed it${S.opts.deduct ? ' (−' + fmt(amt) + ')' : ''}`; renderClue(); }
+  else if (S.teams.some(x => !c.locked.includes(x.id))) { c.note = `✗ ${t.name} missed it`; c.phase = 'show'; openBuzzers(); }
+  else { c.revealed = true; c.phase = 'closed'; c.note = 'No one got it'; renderClue(); }
+  afterScore(t.id); pushPhase();
+}
+
+function doReveal() {
+  const c = S.cur; if (!c || c.phase === 'ddsetup') return;
+  stopTimer(); c.revealed = true; c.phase = 'closed'; c.answering = null;
+  renderClue(); renderScores(); pushPhase();
+}
+
+function putBack() {
+  const c = S.cur; if (!c || c.scoredBy || c.phase === 'closed') return;
+  stopTimer(); S.cur = null; showScreen('board'); renderBoard(); renderScores(); pushPhase();
+}
+
+function backToBoard() {
+  const c = S.cur; if (!c) return;
+  stopTimer(); S.used[c.key] = true; S.cur = null;
+  showScreen('board'); renderBoard(); renderScores(); pushPhase(); save();
+}
+
+/* =====================================================================
+   Final Jeopardy + winner
+   ===================================================================== */
+function startFinal() {
+  if (!S.set.final) return showWinner();
+  closeModals();
+  if (S.cur) { stopTimer(); S.cur = null; }
+  F = { phase: 'wager', wagers: {}, results: {} };
+  S.teams.forEach(t => F.wagers[t.id] = 0);
+  SND.dd(); showScreen('final'); renderFinal(); renderScores(); pushPhase();
+}
+
+function renderFinal() {
+  const fin = S.set.final;
+  const btn = (act, label, cls = '') => `<button class="cbtn ${cls}" data-act="${act}">${label}</button>`;
+  let main, banner = '', ctl = '', ans = false;
+  const clueBlock = `<div class="clue-text"><div class="ct">${esc(fin.clue)}</div></div>${fin.image ? `<img class="cimg" src="${esc(imgSrc(fin.image))}" onload="fitAll()" alt="">` : ''}`;
+  if (F.phase === 'wager') {
+    main = `<div class="wagers">${S.teams.map(t => `<span class="tn" style="--tc:${t.color};--tt:${textOn(t.color)}">${esc(t.name)}</span><span>${fmt(t.score)}</span>
+      <input type="number" min="0" max="${Math.max(0, t.score)}" step="100" data-w="${t.id}" value="${F.wagers[t.id]}" ${t.score <= 0 ? 'disabled' : ''}>`).join('')}</div>`;
+    banner = '<span class="muted">Teams write down a wager (up to their score), then type it in</span>';
+    ctl = btn('fshow', 'Show the clue', 'main') + btn('fcancel', '↩ Back to board');
+  } else if (F.phase === 'clue') {
+    main = clueBlock; banner = '<span class="muted">Teams write their answers…</span>';
+    ctl = btn('freveal', '👁 Reveal answer', 'main');
+  } else {
+    main = clueBlock; ans = true;
+    banner = `<div class="results">${S.teams.map(t => `<div class="r" style="--tc:${t.color};--tt:${textOn(t.color)}"><b>${esc(t.name)}</b> (${fmt(F.wagers[t.id])})
+      <button class="y ${F.results[t.id] === 'right' ? 'sel' : ''}" data-fres="right" data-id="${t.id}">✓</button>
+      <button class="n ${F.results[t.id] === 'wrong' ? 'sel' : ''}" data-fres="wrong" data-id="${t.id}">✗</button></div>`).join('')}</div>`;
+    ctl = btn('ffinish', '🏆 Finish — show winner', 'main');
+  }
+  $('#final').innerHTML = `
+    <div class="clue-head"><span>Final Jeopardy</span><span id="tnum"></span><span>${esc(fin.category)}</span></div>
+    <div class="clue-main">${main}</div>
+    <div class="ans ${ans ? 'on' : ''}">${esc(fin.answer)}</div>
+    <div class="banner">${banner}</div>
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="ctl">${ctl}</div>`;
+  fitAll(); tickUI();
+}
+
+$('#final').addEventListener('click', e => {
+  const r = e.target.closest('[data-fres]');
+  if (r) { F.results[r.dataset.id] = F.results[r.dataset.id] === r.dataset.fres ? undefined : r.dataset.fres; renderFinal(); return; }
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act;
+  if (a === 'fshow') { F.phase = 'clue'; SND.open(); startTimer(S.opts.finalTime, () => { SND.timeup(); toast("Time's up! Pens down"); }); renderFinal(); }
+  else if (a === 'freveal') { stopTimer(); F.phase = 'reveal'; renderFinal(); }
+  else if (a === 'ffinish') finishFinal();
+  else if (a === 'fcancel') { F = null; showScreen('board'); renderBoard(); renderScores(); pushPhase(); }
+});
+$('#final').addEventListener('input', e => {
+  const id = e.target.dataset.w; if (!id) return;
+  F.wagers[id] = clampInt(e.target.value, 0, Math.max(0, team(id).score));
+});
+$('#final').addEventListener('change', e => { // show the value actually used (e.g. capped at the team's score)
+  const id = e.target.dataset.w; if (id) e.target.value = F.wagers[id];
+});
+
+function finishFinal() {
+  S.teams.forEach(t => {
+    const r = F.results[t.id], w = F.wagers[t.id];
+    if (r === 'right') t.score += w; else if (r === 'wrong' && S.opts.deduct) t.score -= w;
+  });
+  pushTeams(); showWinner();
+}
+
+function showWinner() {
+  closeModals(); stopTimer(); S.cur = null; pushPhase();
+  const sorted = [...S.teams].sort((a, b) => b.score - a.score);
+  const top = sorted.filter(t => t.score === sorted[0].score);
+  $('#winnerBody').innerHTML = `<h1>${top.length > 1 ? "IT'S A TIE!" : 'WINNER!'}</h1>
+    <div class="wn" style="color:${top.length === 1 ? top[0].color : '#fff'}">🏆 ${top.map(t => esc(t.name)).join(' &amp; ')}</div>
+    <div class="rank">${sorted.map((t, i) => `<div style="--tc:${t.color};--tt:${textOn(t.color)}">${i + 1}. ${esc(t.name)} — ${fmt(t.score)}</div>`).join('')}</div>
+    <div class="ctl" style="background:none"><button class="cbtn main" data-act="again">↺ Play again</button><button class="cbtn" data-act="new">⚙ Back to setup</button></div>`;
+  showScreen('winner'); SND.right(); confetti(); save();
+}
+$('#winner').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  b.dataset.act === 'again' ? restartSame() : toSetup();
+});
+
+function confetti() {
+  const cv = $('#confetti'), ctx = cv.getContext('2d');
+  cv.width = innerWidth; cv.height = innerHeight;
+  const P = Array.from({ length: 200 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height, r: 4 + Math.random() * 7,
+    c: `hsl(${Math.random() * 360},90%,60%)`, vy: 2 + Math.random() * 4, vx: -2 + Math.random() * 4, rot: Math.random() * 6 }));
+  (function loop() {
+    if (S.screen !== 'winner') return;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    P.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.rot += .1;
+      if (p.y > cv.height) { p.y = -10; p.x = Math.random() * cv.width; }
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); ctx.restore();
+    });
+    requestAnimationFrame(loop);
+  })();
+}
+
+function restartSame() {
+  closeModals(); stopTimer(); S.cur = null; F = null;
+  S.teams.forEach(t => t.score = 0); S.used = {}; S.control = null; assignDailyDoubles();
+  showScreen('board'); renderBoard(); renderScores(); pushTeams(); pushPhase(); save();
+}
+function toSetup() {
+  closeModals(); stopTimer(); S.cur = null; F = null; store.del('jeo.save'); $('#btnResume').hidden = true;
+  S.teams.forEach(t => t.score = 0); S.used = {}; S.control = null;
+  showScreen('setup'); renderTeamInputs(); renderNet(); pushTeams(); pushPhase();
+}
+
+/* =====================================================================
+   Menu, modals, keyboard
+   ===================================================================== */
+function closeModals() { $$('.modal.on').forEach(m => m.classList.remove('on')); }
+function openModal(id) { $('#' + id).classList.add('on'); renderNet(); }
+
+function renderMenu() {
+  const step = S.set ? S.set.values[0] : 100;
+  const active = document.activeElement;
+  if (active && active.closest && active.closest('#menuTeams') && active.tagName === 'INPUT') return; // don't steal focus while typing
+  $('#menuTeams').innerHTML = S.teams.map((t, i) => {
+    return `<div class="trow"><span class="sw" style="background:${t.color};width:20px;height:20px;border-radius:50%"></span>
+      <input type="text" data-n="${i}" value="${esc(t.name)}" maxlength="30">
+      <button class="btn" data-adj="${i}" data-d="${-step}">−${step}</button>
+      <input type="number" data-s="${i}" value="${t.score}" step="${step}">
+      <button class="btn" data-adj="${i}" data-d="${step}">+${step}</button>
+      ${tabletsReady() ? `<span title="${isOnline(t.id) ? 'tablet connected' : 'no tablet'}">${isOnline(t.id) ? '📱' : '·'}</span>` : ''}</div>`;
+  }).join('');
+  $('#mFinal').hidden = !(S.set && S.set.final) || S.screen === 'final';
+}
+$('#menuTeams').addEventListener('change', e => {
+  const n = e.target.dataset.n, s = e.target.dataset.s;
+  if (n != null) S.teams[n].name = e.target.value || 'Team ' + (+n + 1);
+  if (s != null) S.teams[s].score = parseInt(e.target.value, 10) || 0;
+  renderScores(); pushTeams(); save(); if (S.cur) renderClue();
+});
+$('#menuTeams').addEventListener('click', e => {
+  const b = e.target.closest('[data-adj]'); if (!b) return;
+  S.teams[b.dataset.adj].score += +b.dataset.d; renderMenu(); renderScores(); pushTeams(); save();
+});
+$('#mFinal').onclick = () => { if (confirm('Go to Final Jeopardy now?')) startFinal(); };
+$('#mEnd').onclick = () => { if (confirm('End the game and show the winner?')) showWinner(); };
+$('#mAgain').onclick = () => { if (confirm('Reset all scores and the board?')) restartSame(); };
+$('#mNew').onclick = () => { if (confirm('Leave this game and go back to setup? The current game will be lost.')) toSetup(); };
+
+$('#btnTablets').onclick = () => openModal('mTablets');
+$('#btnMenu').onclick = () => openModal('mMenu');
+$('#btnSound').onclick = () => { S.opts.sound = !S.opts.sound; $('#btnSound').textContent = S.opts.sound ? '🔊' : '🔇'; $('#optSound').checked = S.opts.sound; store.set('jeo.opts', S.opts); if (S.opts.sound) SND.join(); };
+const toggleFS = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+$('#btnFS').onclick = toggleFS;
+$$('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m || e.target.hasAttribute('data-close')) m.classList.remove('on'); }));
+
+// buttons shouldn't keep focus (Space would re-trigger them)
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.blur(); });
+
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+  if (e.key === 'Escape') {
+    if ($('.modal.on')) { closeModals(); return; }
+    if (typing) { e.target.blur(); return; }
+    if (S.cur) { e.preventDefault(); S.cur.phase === 'closed' ? backToBoard() : putBack(); }
+    return;
+  }
+  if (typing) {
+    if (e.key === 'Enter' && e.target.id === 'wager') { e.preventDefault(); ddGo(); }
+    return;
+  }
+  if ($('.modal.on')) return;
+  const k = e.key.toLowerCase();
+  if (k === 'f') { toggleFS(); return; }
+  if (k === 't' && S.screen !== 'setup') { openModal('mTablets'); return; }
+  if (k === 'm' && S.screen !== 'setup') { openModal('mMenu'); return; }
+  if (S.screen !== 'clue' || !S.cur) return;
+  const c = S.cur;
+  if (/^[1-8]$/.test(k)) { const t = S.teams[+k - 1]; if (t) selectTeam(t.id); return; }
+  if (k === ' ' || k === 'enter') {
+    e.preventDefault();
+    if (c.phase === 'show') openBuzzers(); else if (c.phase === 'closed') backToBoard(); else if (c.phase === 'ddsetup') ddGo();
+  } else if (k === 'c') markCorrect();
+  else if (k === 'x') markWrong();
+  else if (k === 'a') doReveal();
+});
+
+/* =====================================================================
+   Boot
+   ===================================================================== */
+initSetup();
+initSets().then(() => { renderNet(); });
+if (store.get('jeo.tablets')) enableTablets();   // remembered from last time
+showScreen('setup');
+renderTablets($('#tabletSetup'));
+</script>
+</body>
+</html>

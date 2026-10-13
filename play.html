@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jeopardy Buzzer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#050b3a">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:#050b3a;color:#fff;overflow:hidden;overscroll-behavior:none;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button,input{font:inherit}
+.view{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:4vmin;gap:3vmin;text-align:center}
+.view.on{display:flex}
+h1{font-family:Impact,sans-serif;font-size:min(14vw,12vh);color:#ffcc33;margin:0;letter-spacing:.04em;text-shadow:.5vmin .5vmin 0 #000}
+p{font-size:max(18px,3.4vmin);margin:0;opacity:.85}
+.err{color:#ff8a80;font-weight:700;min-height:1.4em}
+
+/* join */
+#code{font-family:Impact,monospace;font-size:min(18vw,14vh);letter-spacing:.25em;text-transform:uppercase;text-align:center;width:min(90vw,9em);
+  border:0;border-radius:2vmin;padding:1vmin;color:#111;background:#fff;caret-color:#111}
+.go{background:#ffcc33;color:#111;border:0;border-radius:2vmin;padding:2vmin 8vmin;font-size:max(22px,5vmin);font-weight:900;box-shadow:0 .8vmin 0 #b8860b}
+.go:active{transform:translateY(.5vmin);box-shadow:0 .3vmin 0 #b8860b}
+
+/* pick */
+#teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(80vw,260px),1fr));gap:2.5vmin;width:min(96vw,900px)}
+.tbtn{border:0;border-radius:2.5vmin;padding:4vmin 2vmin;background:var(--tc);color:var(--tt);font-size:max(22px,5vmin);font-weight:900;box-shadow:0 .8vmin 0 rgba(0,0,0,.4)}
+.tbtn:active{transform:translateY(.5vmin)}
+.tbtn[disabled]{opacity:.35;box-shadow:none}
+.tbtn small{display:block;font-size:.5em;font-weight:600;opacity:.8}
+
+/* buzz */
+#buzz{justify-content:space-between;padding:3vmin}
+#head{display:flex;align-items:center;justify-content:space-between;width:100%;gap:2vmin}
+#me{background:var(--tc);color:var(--tt);border-radius:99px;padding:1.2vmin 4vmin;font-size:max(20px,4.6vmin);font-weight:900;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#score{font-family:Impact,sans-serif;font-size:max(26px,6.5vmin);color:#ffcc33}
+#conn{font-size:max(12px,2.2vmin);opacity:.7}
+#conn::before{content:"●";color:#2ecc71;margin-right:.4em}
+#conn.off::before{color:#e74c3c}
+#bwrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
+#btn{width:min(86vw,64vh);height:min(86vw,64vh);border-radius:50%;border:0;color:#fff;font-weight:900;
+  font-size:min(15vw,11vh);line-height:1.05;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1vmin;padding:4vmin;
+  background:radial-gradient(circle at 35% 30%,#8a8fb0,#3b4070);box-shadow:0 1.2vmin 0 #1b1f45,0 0 6vmin rgba(0,0,0,.6);transition:transform .06s,box-shadow .06s}
+#btn small{font-size:max(16px,3.4vmin);font-weight:600;opacity:.9;max-width:80%}
+#btn.ready{background:radial-gradient(circle at 35% 30%,#7bf5a4,#1faa55 70%);box-shadow:0 1.2vmin 0 #0d6b34,0 0 9vmin rgba(46,204,113,.7);animation:glow 1s infinite}
+#btn.ready:active,#btn.sent{transform:translateY(1vmin) scale(.97);box-shadow:0 .2vmin 0 #0d6b34}
+#btn.sent{background:radial-gradient(circle at 35% 30%,#ffe27a,#d99a00 70%)}
+#btn.you{background:radial-gradient(circle at 35% 30%,#fff,var(--tc) 70%);color:var(--tt);box-shadow:0 0 12vmin var(--tc);animation:glow .7s infinite}
+#btn.locked{background:radial-gradient(circle at 35% 30%,#d36b6b,#7a2020 70%)}
+#btn.wait{background:radial-gradient(circle at 35% 30%,#f5c26b,#b87a10 70%)}
+@keyframes glow{50%{filter:brightness(1.18)}}
+#foot{font-size:max(13px,2.4vmin);opacity:.7;display:flex;gap:4vmin}
+#foot a{color:#fff}
+</style>
+</head>
+<body>
+
+<div class="view" id="vLoad"><h1>JEOPARDY!</h1><p id="loadMsg">Connecting…</p></div>
+
+<div class="view" id="vJoin">
+  <h1>JEOPARDY!</h1>
+  <p>Type the 4‑letter code from the big screen</p>
+  <input id="code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="ABCD">
+  <div class="err" id="joinErr"></div>
+  <button class="go" id="goBtn">Join</button>
+</div>
+
+<div class="view" id="vPick">
+  <h1>Pick your team</h1>
+  <div id="teams"></div>
+  <div class="err" id="pickErr"></div>
+</div>
+
+<div class="view" id="vBuzz">
+  <div id="head"><div id="me"></div><div id="score"></div></div>
+  <div id="bwrap"><button id="btn" class="wait"></button></div>
+  <div id="foot"><span id="conn">connected</span><a href="#" id="switch">switch team</a></div>
+</div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+};
+const textOn = hex => { const n = parseInt(hex.slice(1), 16); return (((n>>16)*299 + ((n>>8)&255)*587 + (n&255)*114) / 1000) > 150 ? '#111' : '#fff'; };
+const fmt = n => (n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US');
+
+const PEER_PREFIX = 'classjeo-';
+const PEER_LIBS = ['peerjs.min.js', 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js']; // local copy first, then CDN
+
+let token = ls.get('jeo.token');
+if (!token) {
+  const a = new Uint8Array(12); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => a[i] = Math.random() * 256);
+  token = Array.from(a).map(b => b.toString(16).padStart(2, '0')).join(''); ls.set('jeo.token', token);
+}
+const qs = new URLSearchParams(location.search);
+let code = (qs.get('c') || ls.get('jeo.code') || '').toUpperCase().slice(0, 4);
+let teamId = ls.get('jeo.team') || null;
+let state = null, peer = null, conn = null, pending = false, autoTried = false, everConnected = false, retryTimer = null;
+
+function view(id) { ['vLoad', 'vJoin', 'vPick', 'vBuzz'].forEach(v => $('#' + v).classList.toggle('on', v === id)); }
+const send = m => { if (conn && conn.open) { try { conn.send(m); } catch (_) {} } };
+const setConn = on => $('#conn').classList.toggle('off', !on);
+
+function loadLib() {
+  if (window.Peer) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    let i = 0;
+    const next = () => {
+      if (i >= PEER_LIBS.length) return reject(new Error("Couldn't load the connection library. Does this tablet have internet?"));
+      const s = document.createElement('script'); s.src = PEER_LIBS[i++];
+      s.onload = () => (window.Peer ? resolve() : next()); s.onerror = () => { s.remove(); next(); };
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+
+async function start() {
+  if (!state) { view('vLoad'); $('#loadMsg').textContent = 'Connecting…'; }
+  try { await loadLib(); } catch (e) { $('#loadMsg').textContent = e.message; view('vLoad'); return; }
+  openPeer();
+}
+
+function failJoin(msg) {
+  code = ''; ls.set('jeo.code', '');
+  if (peer) { try { peer.destroy(); } catch (_) {} peer = null; }
+  conn = null; $('#joinErr').textContent = msg; view('vJoin');
+}
+
+function openPeer() {
+  if (peer) { try { peer.destroy(); } catch (_) {} }
+  const me = peer = new Peer();
+  me.on('open', connectHost);
+  me.on('disconnected', () => { if (!me.destroyed) { try { me.reconnect(); } catch (_) {} } });
+  me.on('error', e => {
+    if (me !== peer) return;
+    if (e.type === 'peer-unavailable' && !everConnected) return failJoin("Can't find that game. Check the code, and that the teacher has turned tablet buzzers on.");
+    if (!everConnected) $('#loadMsg').textContent = 'Having trouble reaching the connection service… retrying';
+    scheduleRetry();
+  });
+}
+
+function scheduleRetry() {
+  setConn(false);
+  clearTimeout(retryTimer);
+  retryTimer = setTimeout(() => {
+    if (!code) return;
+    if (!peer || peer.destroyed) openPeer();
+    else { if (peer.disconnected) { try { peer.reconnect(); } catch (_) {} } connectHost(); }
+  }, 2500);
+}
+
+function connectHost() {
+  clearTimeout(retryTimer);
+  if (conn) { try { conn.close(); } catch (_) {} conn = null; }
+  const c = conn = peer.connect(PEER_PREFIX + code, { reliable: true });
+  c.on('open', () => { if (conn !== c) return; everConnected = true; autoTried = false; ls.set('jeo.code', code); setConn(true); c.send({ t: 'hello', token, team: teamId }); });
+  c.on('data', m => { if (conn === c) onData(m); });
+  c.on('close', () => { if (conn === c) scheduleRetry(); });
+  c.on('error', () => {});
+  setTimeout(() => { if (conn === c && !c.open) { if (!everConnected) $('#loadMsg').textContent = 'Still trying… make sure this tablet has internet.'; scheduleRetry(); } }, 20000);
+}
+
+function onData(m) {
+  if (!m) return;
+  if (m.t === 'state') { state = m.s; pending = false; render(); }
+  else if (m.t === 'denied') { $('#pickErr').textContent = 'Another tablet already has that team.'; teamId = null; ls.set('jeo.team', ''); autoTried = true; render(); }
+  else if (m.t === 'kicked') { teamId = null; ls.set('jeo.team', ''); autoTried = true; if (state) state.you = null; render(); }
+}
+
+function render() {
+  if (!state) return;
+  if (state.you) {
+    if (teamId !== state.you) { teamId = state.you; ls.set('jeo.team', teamId); }
+    return renderBuzz();
+  }
+  if (teamId && !autoTried) { autoTried = true; send({ t: 'claim', teamId }); return; } // re-join our team after a reconnect
+  teamId = null;
+  renderPick();
+}
+
+function renderPick() {
+  view('vPick');
+  $('#teams').innerHTML = state.teams.map(t => {
+    const taken = t.online;
+    return `<button class="tbtn" ${taken ? 'disabled' : ''} data-id="${t.id}" style="--tc:${esc(t.color)};--tt:${textOn(t.color)}">${esc(t.name)}${taken ? '<small>taken</small>' : ''}</button>`;
+  }).join('') || '<p>Waiting for the teacher to set up teams…</p>';
+}
+$('#teams').addEventListener('click', e => {
+  const b = e.target.closest('.tbtn'); if (!b || b.disabled) return;
+  $('#pickErr').textContent = ''; autoTried = true; teamId = b.dataset.id; send({ t: 'claim', teamId });
+});
+
+function renderBuzz() {
+  view('vBuzz');
+  const me = state.teams.find(t => t.id === teamId);
+  if (!me) return;
+  const el = $('#me');
+  el.textContent = me.name; el.style.setProperty('--tc', me.color); el.style.setProperty('--tt', textOn(me.color));
+  $('#score').textContent = fmt(me.score);
+  const b = $('#btn');
+  b.style.setProperty('--tc', me.color); b.style.setProperty('--tt', textOn(me.color));
+  let cls = 'wait', html = '';
+  const eligible = state.eligible.includes(teamId);
+  if (state.phase === 'buzzed' && state.buzzed === teamId) { cls = 'you'; html = `YOU'RE UP!<small>Say your answer out loud</small>`; }
+  else if (state.phase === 'buzzed') {
+    const o = state.teams.find(t => t.id === state.buzzed);
+    cls = 'locked'; html = `${esc(o ? o.name : 'Someone')}<small>buzzed first</small>`;
+  } else if (state.phase === 'open' && eligible) {
+    if (pending) { cls = 'sent'; html = 'BUZZED!'; } else { cls = 'ready'; html = 'BUZZ!'; }
+  } else if (state.phase === 'open') { cls = 'locked'; html = `Already had<br>a go<small>wait for the next question</small>`; }
+  else if (state.clueOn) { cls = 'wait'; html = `Get ready…<small>Listen to the question</small>`; }
+  else { cls = 'wait'; html = `Waiting…<small>Pick a clue on the big screen</small>`; }
+  b.className = cls; b.innerHTML = html;
+}
+
+function buzz() {
+  if (!state || pending || state.phase !== 'open' || !state.eligible.includes(teamId) || !conn || !conn.open) return;
+  pending = true; renderBuzz();
+  if (navigator.vibrate) navigator.vibrate(60);
+  send({ t: 'buzz' });
+  setTimeout(() => { if (pending) { pending = false; renderBuzz(); } }, 3000); // no reply? let them try again
+}
+$('#btn').addEventListener('pointerdown', e => { e.preventDefault(); buzz(); });
+
+$('#switch').addEventListener('click', e => {
+  e.preventDefault(); send({ t: 'release' }); teamId = null; ls.set('jeo.team', ''); autoTried = true;
+  if (state) state.you = null; render();
+});
+
+const join = () => {
+  const c = $('#code').value.trim().toUpperCase();
+  if (c.length !== 4) { $('#joinErr').textContent = 'The code has 4 letters.'; return; }
+  code = c; everConnected = false; state = null; $('#joinErr').textContent = ''; start();
+};
+$('#goBtn').addEventListener('click', join);
+$('#code').addEventListener('keydown', e => { if (e.key === 'Enter') join(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && code && (!conn || !conn.open)) scheduleRetry(); });
+addEventListener('contextmenu', e => e.preventDefault());
+
+if (code.length === 4) start(); else view('vJoin');
+</script>
+</body>
+</html>
