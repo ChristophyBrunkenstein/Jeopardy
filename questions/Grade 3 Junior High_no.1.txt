@@ -1,0 +1,91 @@
+Title: Grade 3 Junior High_no.1
+
+# Jobs
+
+100: This person teaches students at school.
+A: The answer is a teacher.
+
+200: This person works in a hospital. They tell you why you are sick.
+A: The answer is a doctor.
+
+300: This person cooks food in a restaurant.
+A: The answer is a chef.
+
+400: This person puts out fires.
+A: The answer is a firefighter.
+
+500: This person writes stories and books.
+A: The answer is a writer.
+
+# Countries
+
+100: Tokyo is the capital of this country.
+A: The answer is Japan.
+
+200: People in this country eat pizza and pasta. The capital is Rome.
+A: The answer is Italy.
+
+300: The Statue of Liberty is in this country.
+A: The answer is the U.S.A.
+
+400: Kangaroos live in this country.
+A: The answer is Australia.
+
+500: Big Ben is in the capital city of this country.
+A: The answer is the U.K. (England).
+
+# Animals
+
+100: A baby dog is called this.
+A: The answer is a puppy.
+
+200: It is the biggest animal in the sea.
+A: The answer is a whale.
+
+300: It is a bird. It says 'hoot' at night.
+A: The answer is an owl.
+
+400: It is slow. It has a hard shell on its back. It lives in the sea or on land.
+A: The answer is a turtle.
+
+500: This small insect makes honey.
+A: The answer is a bee.
+
+# Daily Life
+
+100: You sleep on this at night.
+A: The answer is a bed.
+
+200: You eat this meal in the morning.
+A: The answer is breakfast.
+
+300: You use this to clean your teeth.
+A: The answer is a toothbrush.
+
+400: You use this to take pictures.
+A: The answer is a camera.
+
+500: You use this to call or text your friends.
+A: The answer is a phone.
+
+# Takahagi
+
+100: How many elementary and junior high schools are there in Takahagi?
+A: The answer is seven. (four elementary + three junior high)
+
+200: Takahagi is in this prefecture.
+A: The answer is Ibaraki.
+
+300: Takahagi is next to this big ocean. It is on the east side.
+A: The answer is the Pacific Ocean.
+
+400: This beautiful place in Takahagi is famous for red leaves in fall. It has a long bridge.
+A: The answer is Hananuki Gorge.
+
+500: A man from Takahagi made a famous map of Japan about 250 years ago. Who is he?
+A: The answer is Nagakubo Sekisui.
+
+# Space
+
+final: This is the biggest planet in the solar system.
+A: The answer is Jupiter.

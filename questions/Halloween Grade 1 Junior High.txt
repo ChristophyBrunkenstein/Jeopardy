@@ -1,0 +1,91 @@
+Title: Halloween - Grade 1 Junior High
+
+# Monsters
+
+100: It is white. It says "Boo!" You can see through it.
+A: The answer is a ghost.
+
+200: She wears a black hat. She flies on a broom.
+A: The answer is a witch.
+
+300: It is very old. It is wrapped in white cloth.
+A: The answer is a mummy.
+
+400 (DD): He comes out at night. He has long teeth. He drinks blood.
+A: The answer is a vampire.
+
+500: It has no skin. You can see the bones. It is white.
+A: The answer is a skeleton.
+
+# Pumpkins
+
+100: What is "Pumpkin" in Japanese?
+A: The answer is かぼちゃ.
+
+200: A pumpkin is this color.
+A: The answer is orange.
+
+300: You cut a pumpkin and make a scary or funny face. You put a light inside. It is called this.
+A: The answer is a jack-o'-lantern.
+
+400: These are small and white. They are inside a pumpkin. You can eat them.
+A: The answer is seeds.
+
+500: It is a sweet food. It is round and flat. It is made from pumpkin.
+A: The answer is pumpkin pie.
+
+# Trick or ....
+
+100: Children say, "Trick or ___!"
+A: The answer is treat.
+
+200: Children get this at Halloween. It is sweet. It comes in many colors.
+A: The answer is candy.
+
+300: What month is Halloween on?
+A: The answer is October.
+
+400: It is brown. It is sweet. Many people love it.
+A: The answer is chocolate.
+
+300: Children wear this on Halloween.
+A: The answer is a costume.
+
+# Costumes
+
+100: A witch wears this on her head. It is black and pointed.
+A: The answer is a hat.
+
+200: A witch flies on this.
+A: The answer is a broom.
+
+300: A vampire wears this on his back. It is black and long.
+A: The answer is a cape.
+
+400: You wear this on your face. It hides your face.
+A: The answer is a mask.
+
+500: A ghost costume is often made from this. It is white. It is on a bed.
+A: The answer is a sheet.
+
+# Spooky Animals
+
+100: It is black. It says "meow." It is a witch's friend.
+A: The answer is a black cat.
+
+200: It flies at night. It sleeps upside down.
+A: The answer is a bat.
+
+300: It has eight legs. It makes a web.
+A: The answer is a spider.
+
+400: It is a big bird. It says "hoo, hoo." It is awake at night.
+A: The answer is an owl.
+
+500: It is like a dog. It is wild. It howls at the moon.
+A: The answer is a wolf.
+
+# Halloween Night
+
+final: It is round and yellow. It is in the sky at night.
+A: The answer is the moon.

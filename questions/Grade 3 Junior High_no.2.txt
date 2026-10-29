@@ -1,0 +1,91 @@
+Title: Grade 3 Junior High_no.2
+
+# Opposites
+
+100: This is the opposite of 'big.'
+A: The answer is small.
+
+200: This is the opposite of 'up.'
+A: The answer is down.
+
+300: This is the opposite of 'happy.'
+A: The answer is sad.
+
+400: This is the opposite of 'early.'
+A: The answer is late.
+
+500: This is the opposite of 'easy.'
+A: The answer is difficult (hard).
+
+# Hobbies
+
+100: You do this with a pencil and paper. You make pictures.
+A: The answer is drawing.
+
+200: You do this with a book. It is quiet.
+A: The answer is reading.
+
+300: You do this in the kitchen. You make food.
+A: The answer is cooking.
+
+400: You do this with a guitar or a piano.
+A: The answer is playing music.
+
+500: You do this in the mountains. You walk up a mountain.
+A: The answer is hiking.
+
+# Landmarks
+
+100: Tokyo Skytree is in this city.
+A: The answer is Tokyo.
+
+200: The Eiffel Tower is in this city.
+A: The answer is Paris.
+
+300: The pyramids are in this country.
+A: The answer is Egypt.
+
+400: The Great Wall is in this country.
+A: The answer is China.
+
+500: This is the tallest mountain in the world.
+A: The answer is Mt. Everest.
+
+# Anime
+
+100: How many dragonballs are there in Dragonball Z?
+A: The answer is seven.
+
+200: In "Detective Conan", what is Conan's real name?
+A: The answer is Shinichi Kudo.
+
+300: In 'Naruto', what is Naruto's favorite food?
+A: The answer is ramen.
+
+400: In 'Hunter X Hunter', what color is Killua's hair?
+A: The answer is white/silver.
+
+500: In 'Spirited Away' Chihiro gets a new name at the bathhouse. What is it?
+A: The answer is Sen.
+
+# Pop Culture
+
+100: In this Disney movie a lion becomes king.
+A: The answer is The Lion King.
+
+200: Elsa sings this famous song in 'Frozen.'
+A: The answer is Let It Go.
+
+300: This American singer sang 'Shake It Off' and 'Love Story.'
+A: The answer is Taylor Swift.
+
+400: This British actor plays Spider-Man in the Marvel movies.
+A: The answer is Tom Holland.
+
+500: This famous British band from Liverpool sang 'Yesterday' and 'Hey Jude.'
+A: The answer is The Beatles.
+
+# Olympics
+
+final: The 2028 Summer Olympics will be held in this city.
+A: The answer is Los Angeles.

@@ -91,12 +91,9 @@ body.clueActive .team{cursor:pointer}
 .cbtn:hover{filter:brightness(1.25)}
 .cbtn.ok{background:#1f9d55}.cbtn.bad{background:#c0392b}.cbtn.main{background:var(--gold);color:#111}
 .cbtn kbd{opacity:.65;font-family:inherit;font-weight:600;margin-left:.4em;font-size:.8em}
-.dd{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh;width:100%}
-.dd .big{font-family:Impact,sans-serif;color:var(--gold);font-size:11vh;text-shadow:.5vh .5vh 0 #000;animation:pulse 1.2s infinite}
-.dd .row{display:flex;gap:1vw;flex-wrap:wrap;justify-content:center;align-items:center;font-size:clamp(14px,2.6vh,32px);font-weight:700}
 .chip{border:.4vh solid transparent;border-radius:99px;padding:.6vh 1.4vw;background:var(--tc);color:var(--tt);font-weight:800}
 .chip.sel{border-color:#fff;box-shadow:0 0 3vh var(--tc);transform:scale(1.08)}
-.dd input[type=number],.wagers input{width:11ch;font-size:1.2em;font-weight:800;text-align:center;padding:.4vh .5vw;border-radius:1vh;border:0}
+.wagers input{width:11ch;font-size:1.2em;font-weight:800;text-align:center;padding:.4vh .5vw;border-radius:1vh;border:0}
 .wagers{display:grid;grid-template-columns:auto auto auto;gap:1.2vh 2vw;align-items:center;margin:auto;font-size:clamp(14px,3vh,38px);font-weight:800}
 .wagers .tn{padding:.4vh 1.4vw;border-radius:99px;background:var(--tc);color:var(--tt)}
 .results{display:flex;gap:1.4vw;flex-wrap:wrap;justify-content:center}
@@ -190,11 +187,11 @@ details ul{margin:6px 0 0;padding-left:20px;line-height:1.5}
               <select id="setSel" style="flex:1;min-width:0"></select>
               <button class="sm" id="btnReload" title="Re-read the file (after you edit it)">↻</button>
               <button class="sm" id="btnOpen">Open file…</button>
-              <input type="file" id="fileIn" accept=".csv,.json,text/csv,application/json" hidden>
+              <input type="file" id="fileIn" accept=".txt,.csv,.json,text/plain,text/csv,application/json" hidden>
             </div>
             <div class="row"><label style="flex:1">Game title&nbsp;<input type="text" id="gameTitle"></label></div>
             <div class="info" id="setInfo"></div>
-            <div class="row"><button class="sm" id="btnTemplate">⬇ Download blank CSV template</button></div>
+            <div class="row"><button class="sm" id="btnTemplate">⬇ Download blank question template</button></div>
           </div>
 
           <div class="card">
@@ -211,7 +208,6 @@ details ul{margin:6px 0 0;padding-left:20px;line-height:1.5}
             <div class="row"><label><input type="checkbox" id="optDeduct"> Take points away for wrong answers</label></div>
             <div class="row"><label><input type="number" id="optBuzz" min="0" max="120"> seconds to buzz in <span class="muted">(0 = no limit)</span></label></div>
             <div class="row"><label><input type="number" id="optAns" min="0" max="120"> seconds to answer <span class="muted">(0 = no limit)</span></label></div>
-            <div class="row"><label><input type="number" id="optDD" min="0" max="5"> random Daily Doubles <span class="muted">(only if the file doesn't mark any)</span></label></div>
             <div class="row"><label><input type="checkbox" id="optSound"> Sound effects</label></div>
           </div>
 
@@ -286,33 +282,33 @@ const store = {
 };
 const clampInt = (v, lo, hi) => Math.min(hi, Math.max(lo, parseInt(v, 10) || 0));
 
-const SAMPLE_CSV = `category,value,clue,answer,image,dailydouble
-Space,100,This is the star at the center of our solar system.,The answer is the Sun.,,
-Space,200,This planet is famous for its beautiful rings.,The answer is Saturn.,,
-Space,300,Neil Armstrong was the first person to walk on this.,The answer is the Moon.,,
-Space,400,This is the name of the galaxy that contains our solar system.,The answer is the Milky Way.,,
-Space,500,"This planet is the hottest in our solar system, even though Mercury is closer to the Sun.",The answer is Venus.,,
-Animals,100,This farm animal says “moo.”,The answer is a cow.,,
-Animals,200,A baby kangaroo is called this.,The answer is a joey.,,
-Animals,300,This is the largest animal on Earth.,The answer is the blue whale.,,
-Animals,400,"Bats, whales and humans all belong to this group of animals that feed their babies milk.",The answer is mammals.,,yes
-Animals,500,A group of lions is called this.,The answer is a pride.,,
-Geography,100,There are this many continents on Earth.,The answer is seven.,,
-Geography,200,Paris is the capital city of this country.,The answer is France.,,
-Geography,300,"This continent is the coldest on Earth, and is almost completely covered in ice.",The answer is Antarctica.,,
-Geography,400,Mount Everest is part of this huge mountain range in Asia.,The answer is the Himalayas.,,
-Geography,500,"This is the capital city of Australia (hint: it's not Sydney).",The answer is Canberra.,,
-Word Wizard,100,This word is the opposite of “hot.”,The answer is cold.,,
-Word Wizard,200,"A word that means the same as another word, like “big” and “large.”",The answer is a synonym.,,
-Word Wizard,300,"This kind of word describes a noun, like “red” or “enormous.”",The answer is an adjective.,,
-Word Wizard,400,"“There,” “their” and “they're” are examples of these: words that sound alike but are spelled differently.",The answer is homophones.,,
-Word Wizard,500,"This punctuation mark shows ownership, as in “the dog's bone.”",The answer is an apostrophe.,,
-Math Mania,100,7 + 5,The answer is 12.,,
-Math Mania,200,6 × 7,The answer is 42.,,
-Math Mania,300,This shape has exactly three sides.,The answer is a triangle.,,
-Math Mania,400,This is half of 250.,The answer is 125.,,
-Math Mania,500,"This is the next number in the pattern: 2, 4, 8, 16, …",The answer is 32.,,
-Our Planet,final,This is the only planet in our solar system that is not named after a god.,The answer is Earth.,,
+const SAMPLE_CSV = `category,value,clue,answer,image
+Space,100,This is the star at the center of our solar system.,The answer is the Sun.,
+Space,200,This planet is famous for its beautiful rings.,The answer is Saturn.,
+Space,300,Neil Armstrong was the first person to walk on this.,The answer is the Moon.,
+Space,400,This is the name of the galaxy that contains our solar system.,The answer is the Milky Way.,
+Space,500,"This planet is the hottest in our solar system, even though Mercury is closer to the Sun.",The answer is Venus.,
+Animals,100,This farm animal says “moo.”,The answer is a cow.,
+Animals,200,A baby kangaroo is called this.,The answer is a joey.,
+Animals,300,This is the largest animal on Earth.,The answer is the blue whale.,
+Animals,400,"Bats, whales and humans all belong to this group of animals that feed their babies milk.",The answer is mammals.,
+Animals,500,A group of lions is called this.,The answer is a pride.,
+Geography,100,There are this many continents on Earth.,The answer is seven.,
+Geography,200,Paris is the capital city of this country.,The answer is France.,
+Geography,300,"This continent is the coldest on Earth, and is almost completely covered in ice.",The answer is Antarctica.,
+Geography,400,Mount Everest is part of this huge mountain range in Asia.,The answer is the Himalayas.,
+Geography,500,"This is the capital city of Australia (hint: it's not Sydney).",The answer is Canberra.,
+Word Wizard,100,This word is the opposite of “hot.”,The answer is cold.,
+Word Wizard,200,"A word that means the same as another word, like “big” and “large.”",The answer is a synonym.,
+Word Wizard,300,"This kind of word describes a noun, like “red” or “enormous.”",The answer is an adjective.,
+Word Wizard,400,"“There,” “their” and “they're” are examples of these: words that sound alike but are spelled differently.",The answer is homophones.,
+Word Wizard,500,"This punctuation mark shows ownership, as in “the dog's bone.”",The answer is an apostrophe.,
+Math Mania,100,7 + 5,The answer is 12.,
+Math Mania,200,6 × 7,The answer is 42.,
+Math Mania,300,This shape has exactly three sides.,The answer is a triangle.,
+Math Mania,400,This is half of 250.,The answer is 125.,
+Math Mania,500,"This is the next number in the pattern: 2, 4, 8, 16, …",The answer is 32.,
+Our Planet,final,This is the only planet in our solar system that is not named after a god.,The answer is Earth.,
 `;
 
 /* =====================================================================
@@ -342,16 +338,15 @@ const COLS = {
   clue: ['clue', 'question', 'q', 'prompt'],
   answer: ['answer', 'a', 'response', 'solution'],
   image: ['image', 'img', 'picture', 'photo', 'imageurl'],
-  dd: ['dailydouble', 'dd', 'double'],
 };
 
 function newSet() { return { title: '', categories: [], values: [], final: null, warnings: [] }; }
 
-function addCell(set, catName, value, clue, answer, image, dd) {
+function addCell(set, catName, value, clue, answer, image) {
   let cat = set.categories.find(c => c.name === catName);
   if (!cat) { cat = { name: catName, cells: {} }; set.categories.push(cat); }
   if (cat.cells[value]) set.warnings.push(`“${catName}” has two clues worth ${value}; the later one is used.`);
-  cat.cells[value] = { clue, answer, image: image || '', dd: !!dd };
+  cat.cells[value] = { clue, answer, image: image || '' };
 }
 
 function finishSet(set) {
@@ -361,8 +356,6 @@ function finishSet(set) {
   if (set.values.length > 7) set.warnings.push(`${set.values.length} different point values — the board gets crowded above 7 rows.`);
   return set;
 }
-
-const yes = v => /^(y|yes|true|1|x|dd|✓)/i.test(String(v || '').trim());
 
 function fromRows(rows) {
   rows = rows.filter(r => r.some(c => String(c).trim() !== ''));
@@ -385,8 +378,43 @@ function fromRows(rows) {
     if (/^final/i.test(vs)) { set.final = { category: cat, clue, answer: get('answer'), image: get('image') }; return; }
     const value = parseInt(vs.replace(/[^0-9-]/g, ''), 10);
     if (!(value > 0)) { set.warnings.push(`Row ${n + 2}: “${vs}” isn’t a point value — skipped.`); return; }
-    addCell(set, cat, value, clue, get('answer'), get('image'), yes(get('dd')));
+    addCell(set, cat, value, clue, get('answer'), get('image'));
   });
+  return finishSet(set);
+}
+
+function fromText(text) {
+  const set = newSet();
+  let cat = '', cur = null, field = 'clue';
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  const flush = () => {
+    if (!cur) return;
+    const c = cur; cur = null;
+    if (!c.clue) { set.warnings.push(`Line ${c.line}: “${c.cat}” ${c.value} has no clue text — skipped.`); return; }
+    if (!c.answer) set.warnings.push(`Line ${c.line}: “${c.cat}” ${c.value} has no answer (A: …).`);
+    if (c.value === 'final') set.final = { category: c.cat, clue: c.clue, answer: c.answer, image: c.image };
+    else addCell(set, c.cat, c.value, c.clue, c.answer, c.image);
+  };
+  lines.forEach((raw, n) => {
+    const line = raw.trim(), ln = n + 1;
+    if (!line || line.startsWith('//')) return;
+    let m;
+    if ((m = line.match(/^title\s*:\s*(.*)$/i)) && !cat) { set.title = m[1].trim(); return; }
+    if ((m = line.match(/^#+\s*(.+)$/))) { flush(); cat = m[1].replace(/\s*#+$/, '').trim(); return; }
+    if ((m = line.match(/^\$?(\d+|final)\s*(?:\(\s*(?:dd|daily\s*double)\s*\))?\s*:\s*(.*)$/i))) {
+      flush();
+      if (!cat) { set.warnings.push(`Line ${ln}: a clue before any “# Category” line — skipped.`); return; }
+      cur = { cat, line: ln, value: /^final$/i.test(m[1]) ? 'final' : parseInt(m[1], 10), clue: m[2].trim(), answer: '', image: '' };
+      field = 'clue'; return;
+    }
+    if (!cur) { set.warnings.push(`Line ${ln}: didn’t understand “${line.slice(0, 40)}” — skipped.`); return; }
+    if ((m = line.match(/^(?:a|ans|answer)\s*:\s*(.*)$/i))) { cur.answer = m[1].trim(); field = 'answer'; return; }
+    if ((m = line.match(/^(?:image|img|picture)\s*:\s*(.*)$/i))) { cur.image = m[1].trim(); field = 'image'; return; }
+    if (/^(?:dd|daily\s*double)\s*:?\s*(?:yes)?$/i.test(line)) return;   // old Daily Double marker: ignored
+    if (field === 'image') return;
+    cur[field] = (cur[field] ? cur[field] + ' ' : '') + line;   // wrapped line: keep adding to the clue / answer
+  });
+  flush();
   return finishSet(set);
 }
 
@@ -397,7 +425,7 @@ function fromJSON(o) {
     (c.clues || []).forEach((cl, i) => {
       if (Array.isArray(cl)) cl = { clue: cl[0], answer: cl[1] };
       const value = Number(cl.value != null ? cl.value : (o.values && o.values[i]) != null ? o.values[i] : (i + 1) * 100);
-      if (cl.clue || cl.question) addCell(set, c.name, value, cl.clue || cl.question, cl.answer || '', cl.image, cl.dailyDouble || cl.dd);
+      if (cl.clue || cl.question) addCell(set, c.name, value, cl.clue || cl.question, cl.answer || '', cl.image);
     });
   });
   if (o.final) set.final = { category: o.final.category || 'Final Jeopardy', clue: o.final.clue || o.final.question || '', answer: o.final.answer || '', image: o.final.image || '' };
@@ -405,24 +433,30 @@ function fromJSON(o) {
 }
 
 function parseSetText(text, filename) {
-  const set = /\.json$/i.test(filename) || /^\s*[\[{]/.test(text) ? fromJSON(JSON.parse(text)) : fromRows(parseCSV(text));
+  const ext = (filename.match(/\.([^.]+)$/) || [])[1] || '';
+  const isJSON = /^json$/i.test(ext) || /^\s*[\[{]/.test(text);
+  const isCSV = /^csv$/i.test(ext) || (!/^txt$/i.test(ext) && /^﻿?\s*category\s*[,;	]/i.test(text));
+  const set = isJSON ? fromJSON(JSON.parse(text)) : isCSV ? fromRows(parseCSV(text)) : fromText(text);
   if (!set.title) set.title = filename.replace(/\.[^.]+$/, '').replace(/^Sample - /i, '');
   return set;
 }
 
-function templateCSV() {
-  const rows = [['category', 'value', 'clue', 'answer', 'image', 'dailydouble']];
-  for (let c = 1; c <= 5; c++) for (let v = 1; v <= 5; v++) rows.push([`Category ${c}`, v * 100, `Clue for Category ${c}, ${v * 100}`, 'The answer is ….', '', c === 3 && v === 4 ? 'yes' : '']);
-  rows.push(['Final Category', 'final', 'The Final Jeopardy clue goes here', 'The answer is ….', '', '']);
-  return '﻿' + rows.map(r => r.map(x => /[",\n]/.test(x) ? `"${String(x).replace(/"/g, '""')}"` : x).join(',')).join('\r\n') + '\r\n';
+function templateText() {
+  const out = ['Title: My Jeopardy Game', '', '// Lines starting with // are ignored. A clue can wrap onto extra lines.', '// Add "Image: file.png" under a clue to show a picture.'];
+  for (let c = 1; c <= 5; c++) {
+    out.push('', `# Category ${c}`);
+    for (let v = 1; v <= 5; v++) out.push('', `${v * 100}: Clue for Category ${c}, ${v * 100}`, 'A: The answer is ….');
+  }
+  out.push('', '# Final Category', '', 'final: The Final Jeopardy clue goes here', 'A: The answer is ….');
+  return out.join('\r\n') + '\r\n';
 }
 
 /* =====================================================================
    Game state
    ===================================================================== */
 const S = {
-  set: null, title: '', teams: [], used: {}, dd: {}, control: null, screen: 'setup', cur: null, pop: null,
-  opts: Object.assign({ deduct: false, buzzTime: 10, answerTime: 10, finalTime: 30, doubles: 1, sound: true }, store.get('jeo.opts') || {}),
+  set: null, title: '', teams: [], used: {}, control: null, screen: 'setup', cur: null, pop: null,
+  opts: Object.assign({ deduct: false, buzzTime: 10, answerTime: 10, finalTime: 30, sound: true }, store.get('jeo.opts') || {}),
 };
 let F = null; // final jeopardy state
 
@@ -440,22 +474,11 @@ function makeTeams(n) {
 
 function save() {
   if (S.screen === 'setup' || !S.set) return;
-  store.set('jeo.save', { v: 1, set: S.set, title: S.title, teams: S.teams, used: S.used, dd: S.dd, control: S.control });
+  store.set('jeo.save', { v: 1, set: S.set, title: S.title, teams: S.teams, used: S.used, control: S.control });
 }
 const cellKey = (ci, v) => ci + ':' + v;
 const totalCells = () => S.set.categories.reduce((n, c) => n + Object.keys(c.cells).length, 0);
 const usedCount = () => Object.keys(S.used).length;
-
-function assignDailyDoubles() {
-  S.dd = {};
-  const all = [];
-  S.set.categories.forEach((c, ci) => Object.keys(c.cells).forEach(v => {
-    if (c.cells[v].dd) S.dd[cellKey(ci, +v)] = true;
-    else if (+v !== S.set.values[0]) all.push(cellKey(ci, +v));
-  }));
-  if (Object.keys(S.dd).length || !S.opts.doubles) return;
-  for (let i = 0; i < S.opts.doubles && all.length; i++) S.dd[all.splice(Math.floor(Math.random() * all.length), 1)[0]] = true;
-}
 
 /* =====================================================================
    Sound (synthesised – no files needed)
@@ -763,8 +786,7 @@ function renderSetInfo(err) {
   const el = $('#setInfo');
   if (err) { el.innerHTML = `<span class="err">${esc(err)}</span>`; return; }
   const s = S.set; if (!s) { el.textContent = ''; return; }
-  const dds = s.categories.reduce((n, c) => n + Object.values(c.cells).filter(x => x.dd).length, 0);
-  el.innerHTML = `<b>${s.categories.length}</b> categories · <b>${totalCells()}</b> clues · Final Jeopardy: <b>${s.final ? '✓' : 'none'}</b> · Daily Doubles marked: <b>${dds}</b>`
+  el.innerHTML = `<b>${s.categories.length}</b> categories · <b>${totalCells()}</b> clues · Final Jeopardy: <b>${s.final ? '✓' : 'none'}</b>`
     + (s.warnings.length ? '<div class="warn">' + s.warnings.slice(0, 4).map(esc).join('<br>') + (s.warnings.length > 4 ? `<br>…and ${s.warnings.length - 4} more` : '') + '</div>' : '');
 }
 
@@ -808,13 +830,12 @@ function setTeamCount(n) {
 
 function initSetup() {
   $('#optDeduct').checked = S.opts.deduct; $('#optBuzz').value = S.opts.buzzTime; $('#optAns').value = S.opts.answerTime;
-  $('#optDD').value = S.opts.doubles; $('#optSound').checked = S.opts.sound;
+  $('#optSound').checked = S.opts.sound;
   $('#btnSound').textContent = S.opts.sound ? '🔊' : '🔇';
   const saveOpts = () => store.set('jeo.opts', S.opts);
   $('#optDeduct').onchange = e => { S.opts.deduct = e.target.checked; saveOpts(); };
   $('#optBuzz').onchange = e => { S.opts.buzzTime = clampInt(e.target.value, 0, 120); e.target.value = S.opts.buzzTime; saveOpts(); };
   $('#optAns').onchange = e => { S.opts.answerTime = clampInt(e.target.value, 0, 120); e.target.value = S.opts.answerTime; saveOpts(); };
-  $('#optDD').onchange = e => { S.opts.doubles = clampInt(e.target.value, 0, 5); e.target.value = S.opts.doubles; saveOpts(); };
   $('#optSound').onchange = e => { S.opts.sound = e.target.checked; $('#btnSound').textContent = S.opts.sound ? '🔊' : '🔇'; saveOpts(); };
   $('#gameTitle').oninput = e => { S.title = e.target.value; };
   $('#tMinus').onclick = () => setTeamCount(S.teams.length - 1);
@@ -841,7 +862,7 @@ function initSetup() {
   };
   $('#btnTemplate').onclick = () => {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([templateCSV()], { type: 'text/csv' })); a.download = 'my-jeopardy-questions.csv';
+    a.href = URL.createObjectURL(new Blob([templateText()], { type: 'text/plain' })); a.download = 'my-jeopardy-questions.txt';
     document.body.appendChild(a); a.click(); a.remove();
   };
   $('#btnStart').onclick = startGame;
@@ -860,13 +881,12 @@ function startGame() {
   S.teams.forEach(t => t.score = 0);
   store.set('jeo.teamNames', S.teams.map(t => t.name));
   S.used = {}; S.control = null; S.cur = null; F = null;
-  assignDailyDoubles();
   showScreen('board'); renderBoard(); renderScores(); pushTeams(); pushPhase(); save();
   if (document.documentElement.requestFullscreen && !document.fullscreenElement && matchMedia('(min-width:1200px)').matches) { /* leave fullscreen to the teacher (F) */ }
 }
 
 function resumeGame(sv) {
-  S.set = sv.set; S.title = sv.title; S.teams = sv.teams; S.used = sv.used; S.dd = sv.dd; S.control = sv.control; S.cur = null; F = null;
+  S.set = sv.set; S.title = sv.title; S.teams = sv.teams; S.used = sv.used; S.control = sv.control; S.cur = null; F = null;
   showScreen('board'); renderBoard(); renderScores(); pushTeams(); pushPhase();
 }
 
@@ -941,18 +961,11 @@ function openClue(ci, v) {
   if (!cell || S.used[cellKey(ci, v)] || S.cur) return;
   ac();
   S.cur = { ci, v, key: cellKey(ci, v), cat: cat.name, clue: cell.clue, answer: cell.answer, image: cell.image,
-    dd: !!S.dd[cellKey(ci, v)], phase: 'show', locked: [], answering: null, wager: 0, ddTeam: null, revealed: false, scoredBy: null, note: '' };
+    phase: 'show', locked: [], answering: null, revealed: false, scoredBy: null, note: '' };
   const c = S.cur;
-  if (c.dd) {
-    c.phase = 'ddsetup';
-    c.ddTeam = S.control || S.teams[0].id;
-    const t = team(c.ddTeam); c.wager = Math.min(ddMax(t), c.v);
-    SND.dd();
-  } else SND.open();
+  SND.open();
   showScreen('clue'); renderClue(); renderScores(); pushPhase();
 }
-
-const ddMax = t => Math.max(t.score, S.set.values[S.set.values.length - 1]);
 
 function renderClue() {
   const c = S.cur; if (!c) return;
@@ -963,14 +976,6 @@ function renderClue() {
   const putBack = canPutBack ? btn('putback', '↩ Put back', 'Esc') : '';
 
   switch (c.phase) {
-    case 'ddsetup': {
-      const t = team(c.ddTeam), mx = ddMax(t);
-      main = `<div class="dd"><div class="big">DAILY DOUBLE!</div>
-        <div class="row">Who is playing?&nbsp;${S.teams.map(x => `<button class="chip ${x.id === c.ddTeam ? 'sel' : ''}" style="--tc:${x.color};--tt:${textOn(x.color)}" data-act="ddteam" data-id="${x.id}">${esc(x.name)}</button>`).join('')}</div>
-        <div class="row">Wager (0 – ${fmt(mx)}):&nbsp;<input type="number" id="wager" min="0" max="${mx}" step="100" value="${c.wager}"></div></div>`;
-      ctl = btn('ddgo', 'Show the clue', 'Enter', 'main') + putBack;
-      break;
-    }
     case 'show':
       main = clueBlock;
       banner = '<span class="muted">Read the clue, then open the buzzers</span>';
@@ -986,7 +991,7 @@ function renderClue() {
     case 'answer': {
       main = clueBlock;
       const t = team(c.answering);
-      banner = `<span class="pill" style="--tc:${t.color};--tt:${textOn(t.color)}">${esc(t.name)}</span><span>${c.dd ? `wagered ${fmt(c.wager)} — ` : ''}what's your answer?</span>`;
+      banner = `<span class="pill" style="--tc:${t.color};--tt:${textOn(t.color)}">${esc(t.name)}</span><span>what's your answer?</span>`;
       ctl = btn('correct', '✓ Correct', 'C', 'ok') + btn('wrong', '✗ Wrong', 'X', 'bad') + btn('reveal', '👁 Reveal', 'A') + putBack;
       break;
     }
@@ -998,7 +1003,7 @@ function renderClue() {
     }
   }
   $('#clue').innerHTML = `
-    <div class="clue-head"><span>${esc(c.cat)}</span><span id="tnum"></span><span>${c.dd ? 'Daily Double' : fmt(c.v)}</span></div>
+    <div class="clue-head"><span>${esc(c.cat)}</span><span id="tnum"></span><span>${fmt(c.v)}</span></div>
     <div class="clue-main">${main}</div>
     <div class="ans ${c.revealed ? 'on' : ''}">${esc(c.answer)}</div>
     <div class="banner">${banner}</div>
@@ -1009,22 +1014,8 @@ function renderClue() {
 
 $('#clue').addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
-  if (b.dataset.act === 'ddteam') { S.cur.ddTeam = b.dataset.id; const t = team(b.dataset.id); S.cur.wager = Math.min(ddMax(t), S.cur.wager || S.cur.v); renderClue(); renderScores(); return; }
-  ({ open: openBuzzers, reveal: doReveal, putback: putBack, correct: markCorrect, wrong: markWrong, back: backToBoard, ddgo: ddGo })[b.dataset.act]();
+  ({ open: openBuzzers, reveal: doReveal, putback: putBack, correct: markCorrect, wrong: markWrong, back: backToBoard })[b.dataset.act]();
 });
-$('#clue').addEventListener('input', e => {
-  if (e.target.id === 'wager' && S.cur) S.cur.wager = parseInt(e.target.value, 10) || 0;
-});
-
-function ddGo() {
-  const c = S.cur; if (!c || c.phase !== 'ddsetup') return;
-  const t = team(c.ddTeam), mx = ddMax(t);
-  c.wager = clampInt(c.wager, 0, mx);
-  c.answering = t.id; c.phase = 'answer';
-  startTimer(S.opts.answerTime, () => { SND.timeup(); toast("Time's up!"); });
-  renderClue(); renderScores(); pushPhase();
-}
-
 function openBuzzers() {
   const c = S.cur; if (!c || !(c.phase === 'show' || c.phase === 'open')) return;
   c.phase = 'open'; c.answering = null; SND.open();
@@ -1034,8 +1025,7 @@ function openBuzzers() {
 
 function selectTeam(id) {
   const c = S.cur; if (!c || c.scoredBy || !team(id)) return;
-  if (c.phase === 'ddsetup') { c.ddTeam = id; c.wager = Math.min(ddMax(team(id)), c.wager || c.v); renderClue(); renderScores(); return; }
-  if (c.dd || c.locked.includes(id)) return;
+  if (c.locked.includes(id)) return;
   stopTimer();
   c.answering = id; c.phase = 'answer'; c.note = '';
   SND.buzz();
@@ -1047,7 +1037,7 @@ function afterScore(id) { S.pop = id; renderScores(); pushTeams(); save(); }
 
 function markCorrect() {
   const c = S.cur; if (!c || c.phase !== 'answer') return;
-  const t = team(c.answering), amt = c.dd ? c.wager : c.v;
+  const t = team(c.answering), amt = c.v;
   stopTimer(); t.score += amt; S.control = t.id; c.scoredBy = t.id; c.amount = amt;
   c.revealed = true; c.phase = 'closed'; c.answering = null;
   SND.right(); renderClue(); afterScore(t.id); pushPhase();
@@ -1055,17 +1045,16 @@ function markCorrect() {
 
 function markWrong() {
   const c = S.cur; if (!c || c.phase !== 'answer') return;
-  const t = team(c.answering), amt = c.dd ? c.wager : c.v;
+  const t = team(c.answering), amt = c.v;
   stopTimer(); if (S.opts.deduct) t.score -= amt;
   c.locked.push(t.id); c.answering = null; SND.wrong();
-  if (c.dd) { c.revealed = true; c.phase = 'closed'; c.note = `${t.name} missed it${S.opts.deduct ? ' (−' + fmt(amt) + ')' : ''}`; renderClue(); }
-  else if (S.teams.some(x => !c.locked.includes(x.id))) { c.note = `✗ ${t.name} missed it`; c.phase = 'show'; openBuzzers(); }
+  if (S.teams.some(x => !c.locked.includes(x.id))) { c.note = `✗ ${t.name} missed it`; c.phase = 'show'; openBuzzers(); }
   else { c.revealed = true; c.phase = 'closed'; c.note = 'No one got it'; renderClue(); }
   afterScore(t.id); pushPhase();
 }
 
 function doReveal() {
-  const c = S.cur; if (!c || c.phase === 'ddsetup') return;
+  const c = S.cur; if (!c) return;
   stopTimer(); c.revealed = true; c.phase = 'closed'; c.answering = null;
   renderClue(); renderScores(); pushPhase();
 }
@@ -1183,7 +1172,7 @@ function confetti() {
 
 function restartSame() {
   closeModals(); stopTimer(); S.cur = null; F = null;
-  S.teams.forEach(t => t.score = 0); S.used = {}; S.control = null; assignDailyDoubles();
+  S.teams.forEach(t => t.score = 0); S.used = {}; S.control = null;
   showScreen('board'); renderBoard(); renderScores(); pushTeams(); pushPhase(); save();
 }
 function toSetup() {
@@ -1246,10 +1235,7 @@ document.addEventListener('keydown', e => {
     if (S.cur) { e.preventDefault(); S.cur.phase === 'closed' ? backToBoard() : putBack(); }
     return;
   }
-  if (typing) {
-    if (e.key === 'Enter' && e.target.id === 'wager') { e.preventDefault(); ddGo(); }
-    return;
-  }
+  if (typing) return;
   if ($('.modal.on')) return;
   const k = e.key.toLowerCase();
   if (k === 'f') { toggleFS(); return; }
@@ -1260,7 +1246,7 @@ document.addEventListener('keydown', e => {
   if (/^[1-8]$/.test(k)) { const t = S.teams[+k - 1]; if (t) selectTeam(t.id); return; }
   if (k === ' ' || k === 'enter') {
     e.preventDefault();
-    if (c.phase === 'show') openBuzzers(); else if (c.phase === 'closed') backToBoard(); else if (c.phase === 'ddsetup') ddGo();
+    if (c.phase === 'show') openBuzzers(); else if (c.phase === 'closed') backToBoard();
   } else if (k === 'c') markCorrect();
   else if (k === 'x') markWrong();
   else if (k === 'a') doReveal();

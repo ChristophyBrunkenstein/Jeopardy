@@ -1,0 +1,91 @@
+Title: Grade 2 Junior High_no.2
+
+# School Subjects
+
+100: You learn about numbers in this class.
+A: The answer is math.
+
+200: You sing songs and play instruments in this class.
+A: The answer is music.
+
+300: You run and play sports in this class.
+A: The answer is P.E.
+
+400: You draw and paint in this class.
+A: The answer is art.
+
+500: You do experiments in this class.
+A: The answer is science.
+
+# Transportation
+
+100: It has four wheels. You drive it on the road.
+A: The answer is a car.
+
+200: It flies in the sky. You take it to go to other countries.
+A: The answer is an airplane.
+
+300: It has two wheels. You pedal it.
+A: The answer is a bicycle.
+
+400: It is a very fast train in Japan.
+A: The answer is the Shinkansen.
+
+500: It floats on the sea. It carries people and cars.
+A: The answer is a ship.
+
+# Shapes
+
+100: A ball has this shape. It is round.
+A: The answer is a circle.
+
+200: It has three sides.
+A: The answer is a triangle.
+
+300: It has four sides. All the sides are the same.
+A: The answer is a square.
+
+400: It has four sides. Two sides are long and two sides are short.
+A: The answer is a rectangle.
+
+500: It has five points. You can see many of them in the night sky.
+A: The answer is a star.
+
+# Days and Months
+
+100: This day comes after Sunday.
+A: The answer is Monday.
+
+200: This is the first month of the year.
+A: The answer is January.
+
+300: This is the last month of the year.
+A: The answer is December.
+
+400: This day comes before Wednesday.
+A: The answer is Tuesday.
+
+500: Valentine's Day is in this month.
+A: The answer is February.
+
+# Nature
+
+100: It is in the sky in the daytime. It is very hot and bright.
+A: The answer is the sun.
+
+200: You see it in the sky at night. It can be round or look like a banana.
+A: The answer is the moon.
+
+300: It is very tall. It has a trunk and many leaves.
+A: The answer is a tree.
+
+400: It is a big yellow flower. It turns to face the sun.
+A: The answer is a sunflower.
+
+500: Water flows in this. It is long and goes to the sea.
+A: The answer is a river.
+
+# Ocean
+
+final: It is not a fish. It lives in the sea and it is very smart. It likes to jump.
+A: The answer is a dolphin.

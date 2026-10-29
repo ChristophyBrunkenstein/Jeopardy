@@ -1,0 +1,91 @@
+Title: General Knowledge
+
+# Space
+
+100: This is the star at the center of our solar system.
+A: The answer is the Sun.
+
+200: This planet is famous for its beautiful rings.
+A: The answer is Saturn.
+
+300: Neil Armstrong was the first person to walk on this.
+A: The answer is the Moon.
+
+400: This is the name of the galaxy that contains our solar system.
+A: The answer is the Milky Way.
+
+500: This planet is the hottest in our solar system, even though Mercury is closer to the Sun.
+A: The answer is Venus.
+
+# Animals
+
+100: This farm animal says “moo.”
+A: The answer is a cow.
+
+200: A baby kangaroo is called this.
+A: The answer is a joey.
+
+300: This is the largest animal on Earth.
+A: The answer is the blue whale.
+
+400: Bats, whales and humans all belong to this group of animals that feed their babies milk.
+A: The answer is mammals.
+
+500: A group of lions is called this.
+A: The answer is a pride.
+
+# Geography
+
+100: There are this many continents on Earth.
+A: The answer is seven.
+
+200: Paris is the capital city of this country.
+A: The answer is France.
+
+300: This continent is the coldest on Earth, and is almost completely covered in ice.
+A: The answer is Antarctica.
+
+400: Mount Everest is part of this huge mountain range in Asia.
+A: The answer is the Himalayas.
+
+500: This is the capital city of Australia (hint: it's not Sydney).
+A: The answer is Canberra.
+
+# Word Wizard
+
+100: This word is the opposite of “hot.”
+A: The answer is cold.
+
+200: A word that means the same as another word, like “big” and “large.”
+A: The answer is a synonym.
+
+300: This kind of word describes a noun, like “red” or “enormous.”
+A: The answer is an adjective.
+
+400: “There,” “their” and “they're” are examples of these: words that sound alike but are spelled differently.
+A: The answer is homophones.
+
+500: This punctuation mark shows ownership, as in “the dog's bone.”
+A: The answer is an apostrophe.
+
+# Math Mania
+
+100: 7 + 5
+A: The answer is 12.
+
+200: 6 × 7
+A: The answer is 42.
+
+300: This shape has exactly three sides.
+A: The answer is a triangle.
+
+400: This is half of 250.
+A: The answer is 125.
+
+500: This is the next number in the pattern: 2, 4, 8, 16, …
+A: The answer is 32.
+
+# Our Planet
+
+final: This is the only planet in our solar system that is not named after a god.
+A: The answer is Earth.

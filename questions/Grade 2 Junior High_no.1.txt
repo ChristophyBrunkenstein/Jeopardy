@@ -1,0 +1,91 @@
+Title: Grade 2 Junior High_no.1
+
+# Animals
+
+100: It is a pet. It says 'woof.'
+A: The answer is a dog.
+
+200: It lives in the sea. It has eight arms.
+A: The answer is an octopus.
+
+300: It lives in Africa. It has black and white stripes.
+A: The answer is a zebra.
+
+400: It can fly at night. It is not a bird.
+A: The answer is a bat.
+
+500: It is the fastest animal on land. It has spots.
+A: The answer is a cheetah.
+
+# Food
+
+100: It is red. It grows on trees. It is a fruit.
+A: The answer is an apple.
+
+200: You eat this for breakfast. It comes from a chicken.
+A: The answer is an egg.
+
+300: It is Japanese food. It is rice with raw fish.
+A: The answer is sushi.
+
+400: It is a vegetable. It is orange. Rabbits like it.
+A: The answer is a carrot.
+
+500: It is made from potatoes. It is long and thin. You can eat it at a hamburger shop.
+A: The answer is French fries.
+
+# Sports
+
+100: You kick the ball in this sport.
+A: The answer is soccer.
+
+200: You hit a yellow ball with a racket.
+A: The answer is tennis.
+
+300: You do this sport in a pool.
+A: The answer is swimming.
+
+400: Shohei Ohtani plays this sport.
+A: The answer is baseball.
+
+500: Six players are on a team. They hit the ball over a net with their hands.
+A: The answer is volleyball.
+
+# Town
+
+100: You buy food here. It is a big shop.
+A: The answer is a supermarket.
+
+200: Sick people go to this place.
+A: The answer is a hospital.
+
+300: You borrow books from this place.
+A: The answer is a library.
+
+400: Trains stop at this place.
+A: The answer is a station.
+
+500: You send letters from this place.
+A: The answer is a post office.
+
+# Weather
+
+100: Water falls from the sky. You use an umbrella.
+A: The answer is rain.
+
+200: It is white and cold. You can make a snowman.
+A: The answer is snow.
+
+300: The sun is shining. There are no clouds.
+A: The answer is sunny.
+
+400: A very strong wind and heavy rain. It comes to Japan in summer and fall.
+A: The answer is a typhoon.
+
+500: This season comes after summer. The leaves change color.
+A: The answer is fall (autumn).
+
+# Japan
+
+final: This is the tallest mountain in Japan.
+A: The answer is Mt. Fuji.

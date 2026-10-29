@@ -1,0 +1,91 @@
+Title: Grade 1 Junior High_no.1
+
+# Animals
+
+100: It says 'meow.'
+A: The answer is a cat.
+
+200: It is big. It has a long nose.
+A: The answer is an elephant.
+
+300: It is black and white. It lives in a cold place. It cannot fly.
+A: The answer is a penguin.
+
+400: It is very tall. It has a long neck.
+A: The answer is a giraffe.
+
+500: It lives in Australia. It jumps. The baby lives in a pocket.
+A: The answer is a kangaroo.
+
+# Food
+
+100: It is yellow. Monkeys like it.
+A: The answer is a banana.
+
+200: Japanese people eat this every day. It is white.
+A: The answer is rice.
+
+300: It is cold and sweet. You eat it in summer.
+A: The answer is ice cream.
+
+400: It is round. It is from Italy. It has cheese on it.
+A: The answer is pizza.
+
+500: It is a drink. It is made from oranges.
+A: The answer is orange juice.
+
+# Colors
+
+100: The sky is this color.
+A: The answer is blue.
+
+200: A lemon is this color.
+A: The answer is yellow.
+
+300: Red and white make this color.
+A: The answer is pink.
+
+400: Black and white make this color.
+A: The answer is gray.
+
+500: Blue and yellow make this color.
+A: The answer is green.
+
+# School
+
+100: You write with this. It is long and thin.
+A: The answer is a pencil.
+
+200: You read this. It has many pages.
+A: The answer is a book.
+
+300: You sit on this in class.
+A: The answer is a chair.
+
+400: You study English in this room.
+A: The answer is a classroom.
+
+500: It tells the time. It is on the wall.
+A: The answer is a clock.
+
+# Numbers
+
+100: 1 + 1
+A: The answer is two.
+
+200: 5 + 5
+A: The answer is ten.
+
+300: 3 × 3
+A: The answer is nine.
+
+400: 20 − 8
+A: The answer is twelve.
+
+500: 10 + 10 + 10
+A: The answer is thirty.
+
+# Animals
+
+final: It is called the king of the animals. The male has a big mane.
+A: The answer is a lion.

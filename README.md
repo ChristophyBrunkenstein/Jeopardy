@@ -35,25 +35,60 @@ You can mix tablet teams and shouting teams. If a tablet sleeps or refreshes it 
 
 ## Changing the questions
 
-Questions are spreadsheet files (`.csv` or `.json`) in the **`questions`** folder.
+Questions are plain text files (`.txt`) in the **`questions`** folder. Open one in Notepad, change it, save.
 
 - **On GitHub Pages:** add the file to the `questions` folder in your repository and add its name to **`questions/index.json`** (a list of file names) – that list is what fills the drop-down.
 - **From your own computer:** on the setup screen click **Open file…**. Works any time, nothing needs uploading.
-- **Download blank CSV template** gives you a fresh sheet to fill in.
+- **Download blank question template** gives you a fresh file to fill in. After editing a file, click **↻** on the setup screen to re-read it.
 
-### CSV format (edit in Excel / Google Sheets)
+### Text format (easiest)
 
-| category | value | clue | answer | image | dailydouble |
-|---|---|---|---|---|---|
-| Space | 100 | This is the star at the center of our solar system. | The answer is the Sun. | | |
-| Space | 200 | … | … | planets.png | |
-| Animals | 400 | … | … | | yes |
-| Our Planet | final | The Final Jeopardy clue | The answer is Earth. | | |
+```
+Title: Space Quiz
+
+# Space
+
+100: This is the star at the center of our solar system.
+A: The answer is the Sun.
+
+200: This planet is famous for its beautiful rings.
+A: The answer is Saturn.
+Image: saturn.png
+
+400: This is the name of our galaxy.
+A: The answer is the Milky Way.
+
+# Animals
+
+100: This farm animal says "moo."
+A: The answer is a cow.
+
+# Our Planet
+
+final: This is the only planet not named after a god.
+A: The answer is Earth.
+```
+
+- `# Name` starts a category. Under it, each clue is `value: clue text` followed by `A: answer`.
+- `Image: file.png` (optional) shows a picture – a file in the `questions` folder (e.g. `images/map.jpg`) or a full web address.
+- `final: …` makes the **Final Jeopardy** clue; the `# category` above it is its category.
+- A long clue or answer can wrap onto the next line. Blank lines are ignored, and lines starting with `//` are notes to yourself.
+- Values can be anything (100–500, 200–1000, …). Categories appear in the order they are written.
+- Commas, quotes and accents need no special treatment.
+
+### CSV format (still works)
+
+Old `.csv` files still open (use **Open file…**, or list them in `index.json`). The original CSVs are kept in `questions/csv-backup/`.
+
+| category | value | clue | answer | image |
+|---|---|---|---|---|
+| Space | 100 | This is the star at the center of our solar system. | The answer is the Sun. | |
+| Space | 200 | … | … | planets.png |
+| Our Planet | final | The Final Jeopardy clue | The answer is Earth. | |
 
 - One row per clue. Categories appear in the order they first show up; point values can be anything (100–500, 200–1000, …).
 - **`final`** in the *value* column makes that row the Final Jeopardy clue (optional – the *category* column is its category).
 - **`image`** (optional): a file in the `questions` folder (e.g. `planets.png` or `images/map.jpg`) or a full web address.
-- **`dailydouble`** (optional): put `yes` on the clues that should be Daily Doubles. If you mark none, the game picks random ones (setting on the setup screen; 0 turns them off).
 - If you save from Excel, use *CSV UTF-8* so accents and quotes stay right.
 
 ### JSON format (alternative)
@@ -65,7 +100,7 @@ Questions are spreadsheet files (`.csv` or `.json`) in the **`questions`** folde
     { "name": "Fractions",
       "clues": [
         { "value": 100, "clue": "1/2 + 1/2", "answer": "The answer is 1." },
-        { "value": 200, "clue": "…", "answer": "…", "image": "pie.png", "dailyDouble": true }
+        { "value": 200, "clue": "…", "answer": "…", "image": "pie.png" }
       ] }
   ],
   "final": { "category": "Wrap-up", "clue": "…", "answer": "…" }

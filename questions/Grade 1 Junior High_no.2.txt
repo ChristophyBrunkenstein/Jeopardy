@@ -1,0 +1,91 @@
+Title: Grade 1 Junior High_no.2
+
+# Body
+
+100: You see with these.
+A: The answer is eyes.
+
+200: You hear with these.
+A: The answer is ears.
+
+300: You wear shoes on these.
+A: The answer is feet.
+
+400: It is in the middle of your face. You smell with it.
+A: The answer is a nose.
+
+500: You have ten of these on your hands.
+A: The answer is fingers.
+
+# Family
+
+100: She is your father's wife.
+A: The answer is your mother.
+
+200: He is your mother's father.
+A: The answer is your grandfather.
+
+300: She is your mother's sister.
+A: The answer is your aunt.
+
+400: He is your mother's brother.
+A: The answer is your uncle.
+
+500: Your aunt's child is your this.
+A: The answer is your cousin.
+
+# Clothes
+
+100: You wear this on your head. It keeps the sun off your face.
+A: The answer is a hat.
+
+200: You wear these on your feet.
+A: The answer is shoes.
+
+300: You wear these on your hands in winter.
+A: The answer is gloves.
+
+400: You wear this around your neck in winter.
+A: The answer is a scarf.
+
+500: You wear this coat when it rains.
+A: The answer is a raincoat.
+
+# Fruit
+
+100: It is red and round. It grows on trees.
+A: The answer is an apple.
+
+200: It is small and red. It is sweet. People put it on cakes.
+A: The answer is a strawberry.
+
+300: It is round and orange. You peel it.
+A: The answer is an orange.
+
+400: They are small and purple. You eat many at one time.
+A: The answer is grapes.
+
+500: It is big and green outside. It is red inside. You eat it in summer.
+A: The answer is a watermelon.
+
+# Seasons
+
+100: It is hot. You go swimming.
+A: The answer is summer.
+
+200: It is cold. It snows.
+A: The answer is winter.
+
+300: It is warm. Cherry blossoms open.
+A: The answer is spring.
+
+400: The leaves turn red and yellow.
+A: The answer is fall (autumn).
+
+500: In June there is a lot of rain in Japan. This season is called 'tsuyu.'
+A: The answer is the rainy season.
+
+# Animals
+
+final: It has black and yellow stripes. It is a big cat.
+A: The answer is a tiger.
